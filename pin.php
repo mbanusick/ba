@@ -53,7 +53,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 if($stmt->rowCount() == 1){
                     if($row = $stmt->fetch()){
                         $id = $row["id"];
-                        $account_pin1 = $row["pin"];
+                        $account_pin1 = $row["account_pin"];
                         /* $hashed_password = $row["password"];
                         if(password_verify($password, $hashed_password)){
                         // Password is correct, so start a new session */
@@ -215,7 +215,7 @@ Password</a></big></li>
         <td width="160" height="30" class="label"><strong>Confirm Account Pin</strong></td>
         <td height="30" class="content">
 		<span id="sprytf_cpin">
-            <input name="cpin" type="text" class="frmInputs" id="accno" size="20" maxlength="30" />
+            <input name="pin2" type="text" class="frmInputs" id="accno" size="20" maxlength="30" />
             <br/>
            	<span class="confirmRequiredMsg">Confirm Password is required.</span>
 			<span class="textfieldRequiredMsg">Account Pin is required.</span>

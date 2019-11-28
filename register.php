@@ -135,12 +135,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     }
 	
 	 // Validate PIN and PIN2
-	 if(empty(trim($_POST["pin"]))){
+	 if(empty(trim($_POST["account_pin"]))){
         $account_pin_err = "Please enter a PIN";     
-    } elseif((strlen(trim($_POST["pin"])) != 4) && (!(is_numeric(trim($_POST["pin"]))))) {
+    } elseif((strlen(trim($_POST["account_pin"])) != 4) && (!(is_numeric(trim($_POST["account_pin"]))))) {
         $account_pin_err = "PIN must be 4 numbers";
     } else{
-        $account_pin = trim($_POST["pin"]);
+        $account_pin = trim($_POST["account_pin"]);
     }
     
     if(empty(trim($_POST["pin2"]))){
@@ -454,7 +454,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
             <td width="120" height="30" class="label"><label for="accno"><strong>Account Pin </strong></label></td>
             <td height="30" class="content">
 			<span id="sprytf_pin">
-            <input name="pin" type="text" class="frmInputs" id="accno"  size="20" maxlength="30" />
+            <input name="account_pin" type="text" class="frmInputs" id="accno"  size="20" maxlength="30" />
             <br/>
             <span class="textfieldRequiredMsg"><?php echo $account_pin_err; ?></span>
 			</span>
