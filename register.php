@@ -4,12 +4,12 @@ require_once "conn.php";
 
 // Define variables and initialize with empty values 
 $firstname = $lastname = $password1 = $password2 = $email = $phone = $dateofbirth = $gender = "";
-$address = $country = $state = $zip = $account_type = $account_pin1 = $account_pin2 = $picture = "";
+$address = $country = $state = $zip = $account_type = $account_pin = $account_pin2 = $picture = "";
 
 // Define error variables and initialize with empty values
 $firstname_err = $lastname_err = $password1_err = $password2_err = $email_err = $phone_err = "";
 $dateofbirth_err = $gender_err = $address_err = $country_err = $state_err = $zip_err = "";
-$account_type_err = $account_pin1_err = $account_pin2_err = $picture_err = "";
+$account_type_err = $account_pin_err = $account_pin2_err = $picture_err = "";
 
 // Processing form data when form is submitted
 if($_SERVER["REQUEST_METHOD"] == "POST"){
@@ -136,18 +136,18 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 	
 	 // Validate PIN and PIN2
 	 if(empty(trim($_POST["pin"]))){
-        $account_pin1_err = "Please enter a PIN";     
+        $account_pin_err = "Please enter a PIN";     
     } elseif((strlen(trim($_POST["pin"])) != 4) && (!(is_numeric(trim($_POST["pin"]))))) {
-        $account_pin1_err = "PIN must be 4 numbers";
+        $account_pin_err = "PIN must be 4 numbers";
     } else{
-        $account_pin1 = trim($_POST["pin"]);
+        $account_pin = trim($_POST["pin"]);
     }
     
     if(empty(trim($_POST["pin2"]))){
         $account_pin2_err = "Please Confirm PIN";     
     } else{
         $pin2 = trim($_POST["pin2"]);
-        if(empty($account_pin1_err) && ($account_pin1_err != $account_pin2_err)){
+        if(empty($account_pin_err) && ($account_pin_err != $account_pin2_err)){
             $account_pin2_err = "PINs do not match.";
         }
     }
@@ -156,7 +156,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 // Check input errors before inserting in database
 if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && empty($password2_err) && empty($email_err) && empty($phone_err) 
 && empty($dateofbirth_err) && empty($gender_err) && empty($address_err) && empty($country_err) && empty($state_err) && empty($zip_err) 
-&& empty($account_type_err) && empty($account_pin1_err) && empty($account_pin2_err)) {
+&& empty($account_type_err) && empty($account_pin_err) && empty($account_pin2_err)) {
         try {
             $pdo->beginTransaction();
              // Prepare an insert statement
@@ -193,7 +193,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
 				$param_state = $state;
 				$param_zip = $zip;
 				$param_account_type = $account_type;
-				$param_pin = $account_pin1;
+				$param_pin = $account_pin;
 				
 
                 // Attempt to execute the prepared statement
@@ -456,7 +456,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
 			<span id="sprytf_pin">
             <input name="pin" type="text" class="frmInputs" id="accno"  size="20" maxlength="30" />
             <br/>
-            <span class="textfieldRequiredMsg"><?php echo $account_pin1_err; ?></span>
+            <span class="textfieldRequiredMsg"><?php echo $account_pin_err; ?></span>
 			</span>
 			</td>
 		  </tr>

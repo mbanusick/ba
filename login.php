@@ -1,6 +1,100 @@
+<?php
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+// Include config file
+require_once "conn.php";
+
+// Check if the user is already logged in, if yes then redirect him to welcome page
+if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
+    header("location: pin.php");
+    exit;
+}
+ 
+
+ 
+// Define variables and initialize with empty values
+$firstname = $lastname = $password = $email = "";
+$email_err = $password_err = $account_number_err = "";
+ 
+// Processing form data when form is submitted
+if($_SERVER["REQUEST_METHOD"] == "POST"){
+ 
+    // Check if account_number is empty
+    if(empty(trim($_POST["account_number"]))){
+        $account_number = "Please enter your Account Number";
+    } else{
+        $account_number = trim($_POST["account_number"]);
+    }
+    
+    // Check if password is empty
+    if(empty(trim($_POST["password"]))){
+        $password_err = "Please enter your password.";
+    } else{
+        $password = trim($_POST["password"]);
+    }
+    
+    // Validate credentials
+    if(empty($account_number) && empty($password_err)){
+        // Prepare a select statement
+        $sql = "SELECT id, username, fullname, password FROM users WHERE email = :username OR username = :username";
+        
+        if($stmt = $pdo->prepare($sql)){
+            // Bind variables to the prepared statement as parameters
+            $stmt->bindParam(":account_number", $param_account_number, PDO::PARAM_INT);
+            
+			
+            // Set parameters
+            $param_account_number = trim($_POST["account_number"]);
+        
+			
+            // Attempt to execute the prepared statement
+            if($stmt->execute()){
+                // Check if account_number exists, if yes then verify password
+                if($stmt->rowCount() == 1){
+                    if($row = $stmt->fetch()){
+                        $id = $row["id"];
+                        $account_number = $row["account_number"];
+                        /* $hashed_password = $row["password"];
+                        if(password_verify($password, $hashed_password)){
+                        // Password is correct, so start a new session */
+					            	$password1 = $row["password"];
+                        if($password == $password1){
+							
+                            session_start();
+                            
+                            // Store data in session variables
+                            $_SESSION["loggedin"] = true;
+                            $_SESSION["id"] = $id;
+                             
+							
+                            // Redirect user to welcome page
+                            header("location: pin.php");
+                        } else{
+                            // Display an error message if password is not valid
+                            $password_err = "The Password you entered was not valid.";
+                        }
+                    }
+                } else{
+                    // Display an error message if username doesn't exist
+                    $account_number_err = "No Account found with that Account Number";
+                }
+            } else{
+                echo "Oops! Something went wrong. Please try again later.";
+            }
+        }
+        
+        // Close statement
+        unset($stmt);
+    }
+    
+    // Close connection
+    unset($pdo);
+}
+?>
+
+
+
+<!DOCTYPE html>
+<html lang="en" class="nojs">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Online account</title>

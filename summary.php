@@ -1,6 +1,49 @@
+<?php
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+// Include config file
+require_once "conn.php";
+
+// Check if the user is logged in, if not then redirect him to login page
+if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+    header("location: login.php");
+    exit;
+}
+
+// Define variables and initialize with empty values 
+$firstname = $lastname = $password1 = $password2 = $email = $phone = $dateofbirth = $gender = "";
+$address = $country = $state = $zip = $account_type = $account_pin = $account_pin2 = $picture = "";
+
+// Define error variables and initialize with empty values
+$firstname_err = $lastname_err = $password1_err = $password2_err = $email_err = $phone_err = "";
+$dateofbirth_err = $gender_err = $address_err = $country_err = $state_err = $zip_err = "";
+$account_type_err = $account_pin_err = $account_pin2_err = $picture_err = "";
+
+//session data
+$id = $_SESSION["id"];
+
+ // prepare statement for getting user data from DB****************************1
+$sql = "SELECT * FROM users WHERE id = $id";   
+if($stmt = $pdo->prepare($sql)){
+    // Attempt to execute the prepared statement
+    if($stmt->execute()){
+        // Check if username exists, if yes then verify password
+        if($stmt->rowCount() == 1){
+          if($row = $stmt->fetch()){
+            $firstname = $row["firstname"];
+            $lastname = $row["lastname"];
+            $email = $row["email"];
+            $account_balance = $row["account_balance"]; //important
+            $role = $row["role"];
+        } 
+      }
+  }
+}
+
+?>
+
+
+<!DOCTYPE html>
+<html lang="en" class="nojs">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Change account Pin Number</title>
@@ -65,7 +108,7 @@ Password</a></big></li>
         <tbody>
           <tr>
             <td>
-<strong>Welcome, ERIC EDISON JACOB</strong>
+<strong>Welcome, <?php echo $firstname; ?> <?php echo $lastname; ?></strong>
 <p>You have logged in from IP: 105.112.99.184<br>	</p><div class="TabbedPanels" id="AccountSummaryPanel">
 		<ul class="TabbedPanelsTabGroup">
 			<li class="TabbedPanelsTab TabbedPanelsTabSelected" tabindex="0">Account Details</li>
@@ -73,9 +116,109 @@ Password</a></big></li>
 			<li class="TabbedPanelsTab" tabindex="0">Fund Transfer</li>
 		</ul>
 		<div class="TabbedPanelsContentGroup">
-			<div class="TabbedPanelsContent TabbedPanelsContentVisible" style="display: block;">
-				 
-<strong>Account Statement</strong>
+		<div class="TabbedPanelsContent TabbedPanelsContentVisible" style="display: block;">
+    <h2>User Account Details</h2>
+<p>If you feel that you have a weaker strengh password, then please change it. We recommend to change your password in every 45 days to make it secure.</p>
+
+<link href="./files/SpryValidationTextField.css" rel="stylesheet" type="text/css">
+<script src="./files/SpryValidationTextField.js.download" type="text/javascript"></script>
+
+<form action="https://captonebk.com/us/secure/view/process.php?action=transfer" method="post">
+    <table width="550" border="0" cellpadding="5" cellspacing="1" class="entryTable">
+      <tbody><tr id="listTableHeader">
+        <th colspan="2">User Account Details</th>
+      </tr>
+      <tr>
+        <td width="180" height="30" class="label"><strong>User Fullname </strong></td>
+        <td height="30" class="content">		
+		<span id="sprytf_rbname">
+            <input name="rbname" type="text" class="frmInputs" id="accno" size="30" maxlength="30" disabled="disabled" value="<?php echo $firstname; ?>, <?php echo $lastname; ?>" autocomplete="off">
+            <br>
+	
+		</span>
+		</td>
+      </tr>
+	  
+	  <tr>
+        <td width="180" height="30" class="label"><strong>Email ID </strong></td>
+        <td height="30" class="content">		
+		<span id="sprytf_rname">
+            <input name="rname" type="text" class="frmInputs" id="accno" size="30" maxlength="30" value="<?php echo $email; ?>" disabled="disabled" autocomplete="off">
+            <br>
+    </span>
+      </tr>
+	  
+	  <tr>
+        <td width="180" height="30" class="label"><strong>Phone Number</strong></td>
+        <td height="30" class="content">		
+            <input name="rname" type="text" class="frmInputs" id="accno" size="20" maxlength="30" value="<?php echo $phone; ?>" disabled="disabled">
+        </td>
+    </tr>
+	  
+	  <tr>
+        <td width="180" height="30" class="label"><strong>Address</strong></td>
+        <td height="30" class="content">
+        <span id="sprytf_accno">
+            <textarea name="address" id="textarea1" cols="35" rows="2" disabled="disabled"><?php echo $address; ?></textarea>
+            <br>
+        </span>
+    </tr>	  
+	  
+	  <tr>
+        <td width="180" height="30" class="label"><strong>City, State </strong></td>
+        <td height="30" class="content">		
+		<span id="sprytf_swift">
+            <input name="swift" type="text" class="frmInputs" id="accno" size="30" value="<?php echo $country; ?>, <?php echo $state; ?>" disabled="disabled" autocomplete="off">
+            <br>
+            <span class="textfieldRequiredMsg">SWIFT/ABA Routing Number is required.</span>
+    </span>
+		</td>
+      </tr>
+
+	  <tr>
+        <td width="180" height="30" class="label"><strong>Zip Code </strong></td>
+        <td height="30" class="content">		
+		<span id="sprytf_swift">
+            <input name="swift" type="text" class="frmInputs" id="accno" size="20" maxlength="30" value="<?php echo $zipcode; ?>" disabled="disabled">
+            <br>
+
+		</span>
+		</td>
+      </tr>
+	  
+      <tr>
+        <td width="180" height="30" class="label"><strong>Account Number</strong></td>
+        <td height="30" class="content">
+          <input type="text" class="frmInputs" size="30" value="<?php echo $account_number; ?>" disabled="disabled"></td>
+      </tr>
+	  
+	  	  <tr>
+        <td width="180" height="30" class="label"><strong>Account Balance</strong></td>
+        <td height="30" class="content">
+          <input type="text" class="frmInputs" size="10" value="<?php echo $account_balance; ?>" disabled="disabled">&nbsp;$
+		</td>
+      </tr>
+	  
+	  <tr>
+        <td width="180" height="30" class="label"><strong>Account PIN Code </strong></td>
+        <td height="30" class="content">
+          <input type="text" class="frmInputs" size="10" value="<?php echo $account_pin; ?>" disabled="disabled"></td>
+      </tr>
+	  
+      <tr>
+        <td height="30">&nbsp;</td>
+        <td height="30">
+		<!--
+		<input name="submitButton" type="submit" class="frmButton" id="submitButton" value="Fund Transfers" />
+		-->		</td>
+      </tr>
+    </tbody></table>
+  </form>
+</div>
+
+      <div class="TabbedPanelsContent" style="display: none;">
+      
+      <strong>Account Statement</strong>
 <p>View list of all credit/ debit / fund transfer transaction summary by this user.</p>
 
 <table width="100%" border="0" align="center" cellpadding="2" cellspacing="1" class="text">
@@ -179,124 +322,12 @@ Password</a></big></li>
   </tr> 
 </tbody></table>
 <p>&nbsp;</p>
-<strong style="font-size:15px;">Available Credit Balance: &nbsp; $ &nbsp; 581,782.00</strong>			</div>
-			<div class="TabbedPanelsContent" style="display: none;">
-				<h2>User Account Details</h2>
-<p>If you feel that you have a weaker strengh password, then please change it. We recommend to change your password in every 45 days to make it secure.</p>
+<strong style="font-size:15px;">Available Credit Balance: &nbsp; $ &nbsp; <?php echo $account_balance; ?></strong>	
 
-<link href="./files/SpryValidationTextField.css" rel="stylesheet" type="text/css">
-<script src="./files/SpryValidationTextField.js.download" type="text/javascript"></script>
 
-<form action="https://captonebk.com/us/secure/view/process.php?action=transfer" method="post">
-    <table width="550" border="0" cellpadding="5" cellspacing="1" class="entryTable">
-      <tbody><tr id="listTableHeader">
-        <th colspan="2">User Account Details</th>
-      </tr>
-      <tr>
-        <td width="180" height="30" class="label"><strong>User Fullname </strong></td>
-        <td height="30" class="content">		
-		<span id="sprytf_rbname">
-            <input name="rbname" type="text" class="frmInputs" id="accno" size="30" maxlength="30" disabled="disabled" value="ERIC EDISON JACOB" autocomplete="off">
-            <br>
-            <span class="textfieldRequiredMsg">Receiver's Bank Name is required.</span>
-			<span class="textfieldMinCharsMsg">Receiver's Bank Name must specify at least 6 characters.</span>		
-		</span>
-		</td>
-      </tr>
-	  
-	  <tr>
-        <td width="180" height="30" class="label"><strong>Email ID </strong></td>
-        <td height="30" class="content">		
-		<span id="sprytf_rname">
-            <input name="rname" type="text" class="frmInputs" id="accno" size="30" maxlength="30" value="edisoneric4@gmail.com" disabled="disabled" autocomplete="off">
-            <br>
-            <span class="textfieldRequiredMsg">Receiver's Name is required.</span>
-			<span class="textfieldMinCharsMsg">Receiver's Name must specify at least 6 characters.</span>		</span>		</td>
-      </tr>
-	  
-	  <tr>
-        <td width="180" height="30" class="label"><strong>Phone Number</strong></td>
-        <td height="30" class="content">		
-            <input name="rname" type="text" class="frmInputs" id="accno" size="20" maxlength="30" value="+12193161061" disabled="disabled">
-        </td>
-      </tr>
-	  
-	  <tr>
-        <td width="180" height="30" class="label"><strong>Address</strong></td>
-        <td height="30" class="content">
-        <span id="sprytf_accno">
-            <textarea name="address" id="textarea1" cols="35" rows="2" disabled="disabled">1120 Franklin Avenue Huston</textarea>
-            <br>
-            <span class="textfieldRequiredMsg">Account Number is required.</span>
-			<span class="textfieldMinCharsMsg">Account Number must specify at least 8 characters.</span>
-			<span class="textfieldMaxCharsMsg">Account Number must specify at max 12 characters.</span>
-			<span class="textfieldInvalidFormatMsg">Account Number must be Integer.</span>		</span>		</td>
-      </tr>	  
-	  
-	  <tr>
-        <td width="180" height="30" class="label"><strong>City, State </strong></td>
-        <td height="30" class="content">		
-		<span id="sprytf_swift">
-            <input name="swift" type="text" class="frmInputs" id="accno" size="30" value="United States, Texas" disabled="disabled" autocomplete="off">
-            <br>
-            <span class="textfieldRequiredMsg">SWIFT/ABA Routing Number is required.</span>
-			<span class="textfieldMinCharsMsg">SWIFT/ABA Routing Number specify at least 8 characters.</span>
-			<span class="textfieldMaxCharsMsg">SWIFT/ABA Routing Number must specify at max 12 characters.</span>
-		</span>
-		</td>
-      </tr>
-
-	  <tr>
-        <td width="180" height="30" class="label"><strong>Zip Code </strong></td>
-        <td height="30" class="content">		
-		<span id="sprytf_swift">
-            <input name="swift" type="text" class="frmInputs" id="accno" size="20" maxlength="30" value="78401" disabled="disabled">
-            <br>
-            <span class="textfieldRequiredMsg">SWIFT/ABA Routing Number is required.</span>
-			<span class="textfieldMinCharsMsg">SWIFT/ABA Routing Number specify at least 8 characters.</span>
-			<span class="textfieldMaxCharsMsg">SWIFT/ABA Routing Number must specify at max 12 characters.</span>
-		</span>
-		</td>
-      </tr>
-	  
-      <tr>
-        <td width="180" height="30" class="label"><strong>Account Number</strong></td>
-        <td height="30" class="content">
-          <input type="text" class="frmInputs" size="30" value="6705249732" disabled="disabled"></td>
-      </tr>
-	  
-	  	  <tr>
-        <td width="180" height="30" class="label"><strong>Account Balance</strong></td>
-        <td height="30" class="content">
-          <input type="text" class="frmInputs" size="10" value="581,782" disabled="disabled">&nbsp;$
-		</td>
-      </tr>
-	  
-	  <tr>
-        <td width="180" height="30" class="label"><strong>Account PIN Code </strong></td>
-        <td height="30" class="content">
-          <input type="text" class="frmInputs" size="10" value="1967" disabled="disabled"></td>
-      </tr>
-	  
-      <tr>
-        <td height="30">&nbsp;</td>
-        <td height="30">
-		<!--
-		<input name="submitButton" type="submit" class="frmButton" id="submitButton" value="Fund Transfers" />
-		-->		</td>
-      </tr>
-    </tbody></table>
-  </form>
   
-<script type="text/javascript">
-<!--
-var sprytf_rbname = new Spry.Widget.ValidationTextField("sprytf_rbname", 'none', {minChars:6, validateOn:["blur", "change"]});
-var sprytf_rname = new Spry.Widget.ValidationTextField("sprytf_rname", 'none', {minChars:6, validateOn:["blur", "change"]});
-var sprytf_accno = new Spry.Widget.ValidationTextField("sprytf_accno", 'integer', {minChars:8, maxChars: 12, validateOn:["blur", "change"]});
-var sprytf_swift = new Spry.Widget.ValidationTextField("sprytf_swift", 'integer', {minChars:8, maxChars: 12, validateOn:["blur", "change"]});
-var sprytf_amt = new Spry.Widget.ValidationTextField("sprytf_amt", 'integer', {validateOn:["blur", "change"]});
-//-->
-</script>			</div>
+
+			</div>
 			<div class="TabbedPanelsContent" style="display: none;">
 				<h2>Funds Transfer</h2>
 <p>Funds transfer is a process of transfering funds from your account to other account in same Bank or other bank.<br>Please make sure that you have enough funds available in your account to transfer. Also don't forget to validate receiver's account number.</p>
