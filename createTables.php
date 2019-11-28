@@ -15,8 +15,7 @@ try {
     // our SQL statements
     $conn->exec("CREATE TABLE Users (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    account_number INT NOT NULL UNIQUE,
-	firstname VARCHAR(50) NOT NULL,
+   	firstname VARCHAR(50) NOT NULL,
     lastname VARCHAR(50) NOT NULL,
 	password VARCHAR(255) NOT NULL,
 	email VARCHAR(50) NOT NULL UNIQUE,
@@ -28,12 +27,13 @@ try {
 	state VARCHAR(50) NOT NULL,
 	zipcode INT NOT NULL,
 	account_type VARCHAR(15) NOT NULL,
-	pin INT NOT NULL,
+	account_pin INT NOT NULL,
 	date_created DATETIME DEFAULT CURRENT_TIMESTAMP
 	)");
-    $conn->exec("CREATE TABLE Wallet (
+    $conn->exec("CREATE TABLE Account (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, 
     id_user VARCHAR(30) NOT NULL,
+    account_number INT NOT NULL UNIQUE,
     amount INT NOT NULL,
     date_created DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
