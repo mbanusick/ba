@@ -10,7 +10,6 @@ if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
 }
  
 
- 
 // Define variables and initialize with empty values
 $firstname = $lastname = $password = $email = "";
 $email_err = $password_err = $account_number_err = "";
@@ -21,21 +20,21 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     // Check if account_number is empty
     if(empty(trim($_POST["account_number"]))){
         $account_number = "Please enter your Account Number";
-    } else{
+    } else {
         $account_number = trim($_POST["account_number"]);
     }
     
     // Check if password is empty
     if(empty(trim($_POST["password"]))){
         $password_err = "Please enter your password.";
-    } else{
+    } else {
         $password = trim($_POST["password"]);
     }
     
     // Validate credentials
     if(empty($account_number) && empty($password_err)){
         // Prepare a select statement
-        $sql = "SELECT id, username, fullname, password FROM users WHERE email = :username OR username = :username";
+        $sql = "SELECT id, account_number, password FROM users WHERE account_number = :account_number";
         
         if($stmt = $pdo->prepare($sql)){
             // Bind variables to the prepared statement as parameters
@@ -56,7 +55,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                         /* $hashed_password = $row["password"];
                         if(password_verify($password, $hashed_password)){
                         // Password is correct, so start a new session */
-					            	$password1 = $row["password"];
+					    $password1 = $row["password"];
                         if($password == $password1){
 							
                             session_start();
@@ -90,6 +89,10 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     unset($pdo);
 }
 ?>
+
+
+
+
 
 
 

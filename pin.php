@@ -23,20 +23,20 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     if(empty(trim($_POST["account_pin"]))){
         $account_pin_err = "Please enter your Account PIN";
     } else{
-        $account_pin = trim($_POST["pin1"]);
+        $account_pin = trim($_POST["account_pin"]);
     }
     
     // Check if password is empty
     if(empty(trim($_POST["account_pin2"]))){
         $account_pin2_err = "Please re-enter your PIN";
     } else{
-        $account_pin2 = trim($_POST["pin2"]);
+        $account_pin2 = trim($_POST["account_pin2"]);
     }
     
     // Validate credentials
     if(empty($account_pin_err) && empty($account_pin2_err)){
         // Prepare a select statement
-        $sql = "SELECT firstname, lastname FROM users WHERE id = $id";   
+        $sql = "SELECT account_pin, account_number FROM users WHERE id = $id";   
         
         if($stmt = $pdo->prepare($sql)){
             // Bind variables to the prepared statement as parameters
@@ -52,7 +52,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 // Check if account_number exists, if yes then verify password
                 if($stmt->rowCount() == 1){
                     if($row = $stmt->fetch()){
-                        $id = $row["id"];
+                       
                         $account_pin1 = $row["account_pin"];
                         /* $hashed_password = $row["password"];
                         if(password_verify($password, $hashed_password)){
@@ -69,8 +69,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 							
                             // Redirect user to welcome page
                             header("location: summary.php");
-                        } else{
-                            // Display an error message if password is not valid
+
+                        } else {
+                            // Display an error message if PIN is not valid
                             $account_pin2_err = "The PINs doesn't match, try again";
                         }
                     }
@@ -91,7 +92,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     unset($pdo);
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en" class="nojs">

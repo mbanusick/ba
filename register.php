@@ -79,9 +79,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 	// Validate phone
     if(empty(trim($_POST["phone"]))){
         $phone_err = "Please enter your Phone Number";     
-    } elseif (!(is_numeric(trim($_POST["phone"])))) {
+    }/*  elseif (!(is_numeric(trim($_POST["phone"])))) {
 		$phone_err = "Please input numbers";
-	} else {
+	} */ else {
         $phone = trim($_POST["phone"]);
     }
 	
@@ -137,31 +137,31 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 	 // Validate PIN and PIN2
 	 if(empty(trim($_POST["account_pin"]))){
         $account_pin_err = "Please enter a PIN";     
-    } elseif((strlen(trim($_POST["account_pin"])) != 4) && (!(is_numeric(trim($_POST["account_pin"]))))) {
+    } elseif((strlen(trim($_POST["account_pin"])) != 4)) {
         $account_pin_err = "PIN must be 4 numbers";
     } else{
         $account_pin = trim($_POST["account_pin"]);
     }
     
-    if(empty(trim($_POST["pin2"]))){
+    if(empty(trim($_POST["account_pin2"]))){
         $account_pin2_err = "Please Confirm PIN";     
     } else{
-        $pin2 = trim($_POST["pin2"]);
+        $account_pin2 = trim($_POST["account_pin2"]);
         if(empty($account_pin_err) && ($account_pin_err != $account_pin2_err)){
             $account_pin2_err = "PINs do not match.";
         }
     }
 	
 	
-// Check input errors before inserting in database
-if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && empty($password2_err) && empty($email_err) && empty($phone_err) 
-&& empty($dateofbirth_err) && empty($gender_err) && empty($address_err) && empty($country_err) && empty($state_err) && empty($zip_err) 
-&& empty($account_type_err) && empty($account_pin_err) && empty($account_pin2_err)) {
+  // Check input errors before inserting in database
+   if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && empty($password2_err) && empty($email_err) && empty($phone_err) 
+   && empty($dateofbirth_err) && empty($gender_err) && empty($address_err) && empty($country_err) && empty($state_err) && empty($zip_err) 
+   && empty($account_type_err) && empty($account_pin_err) && empty($account_pin2_err)) {
         try {
             $pdo->beginTransaction();
              // Prepare an insert statement
-            $sql = "INSERT INTO users (firstname, lastname, password, email, phone, dateofbirth, gender, address, country, state, zip, account_type, pin) 
-			VALUES (:firstname, :lastname :password, :email, :phone, :dateofbirth, :gender, :address, :country, :state, :zip, :account_type, :pin)";
+            $sql = "INSERT INTO users (firstname, lastname, password, email, phone, dateofbirth, gender, address, country, state, zip, account_type, account_pin) 
+			VALUES (:firstname, :lastname, :password, :email, :phone, :dateofbirth, :gender, :address, :country, :state, :zip, :account_type, :account_pin)";
             
             if($stmt = $pdo->prepare($sql)){
                 // Bind variables to the prepared statement as parameters
@@ -177,7 +177,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
 				$stmt->bindParam(":state", $param_state, PDO::PARAM_STR);
 				$stmt->bindParam(":zip", $param_zip, PDO::PARAM_INT);
 				$stmt->bindParam(":account_type", $param_account_type, PDO::PARAM_STR);
-				$stmt->bindParam(":pin", $param_pin, PDO::PARAM_INT);
+				$stmt->bindParam(":account_pin", $param_account_pin, PDO::PARAM_INT);
 				
                 // Set parameters
 				$param_firstname = $firstname;
@@ -193,18 +193,17 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
 				$param_state = $state;
 				$param_zip = $zip;
 				$param_account_type = $account_type;
-				$param_pin = $account_pin;
+				$param_account_pin = $account_pin;
 				
 
                 // Attempt to execute the prepared statement
-                if($stmt->execute()){
-                    
+                if($stmt->execute()){                    
                    
                     // Redirect to login page
                                     
                     $pdo->commit();
 
-                    include 'regmail.php';
+                    //include 'regmail.php';
                     
                     header("location: login.php?success=Registration was Successful; Await Account Approval");
                 } else{
@@ -216,7 +215,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
             unset($stmt);
         } catch(PDOException $e) {
              $pdo->rollBack();
-            header("location: register.php?error=Unexpected error. Please try again later.");die();
+            header("location: register.php?error=Unexpected error. Please try again later.");
         }
        
     }
@@ -226,6 +225,8 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
 }
 
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en" class="nojs">
@@ -263,7 +264,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
   <table width="100%" border="0" cellspacing="0" cellpadding="20">
     <tr> 
      <td class="contentArea">
-		<form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" enctype="multipart/form-data" id="acclogin">
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">    
       	<h2 align="center"><strong>Register Account: </strong></h2>
       	<p align="center">Please register your account with us to take the advantage of our Online Banking facilities.</p>
 	  	<div class="errorMessage" align="center">&nbsp;</div>
@@ -281,7 +282,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
             <td width="120" height="30" class="label"><label for="accno"><strong>First Name</strong></label></td>
             <td height="30" class="content">
 			<span id="sprytf_firstname">
-            <input name="firstname" type="text" class="frmInputs" id="accno" size="40" maxlength="30" />
+            <input name="firstname" value="<?php echo $firstname; ?>" type="text" class="frmInputs" id="accno" size="40" maxlength="30" />
             <br/>
             <span class="textfieldRequiredMsg"><?php echo $firstname_err; ?></span>
 			</span>
@@ -292,7 +293,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
             <td width="120" height="30" class="label"><label for="accno"><strong>Last Name</strong></label></td>
             <td height="30" class="content">
 			<span id="sprytf_lastname">
-            <input name="lastname" type="text" class="frmInputs" id="accno" size="40" maxlength="30" />
+            <input name="lastname" value="<?php echo $lastname; ?>" type="text" class="frmInputs" id="accno" size="40" maxlength="30" />
             <br/>
             <span class="textfieldRequiredMsg"><?php echo $lastname_err; ?></span>
 			</span>
@@ -303,7 +304,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
             <td height="30" class="label"><label for="pass"><strong>Password</strong></label></td>
             <td height="30" class="content">
 			<span id="sprypwd"> 
-            <input name="password1" type="password" class="frmInputs" id="pass" size="30" /><br />
+            <input name="password1" value="<?php echo $password1; ?>" type="password" class="frmInputs" id="pass" size="30" /><br />
             <span class="passwordMaxCharsMsg"><?php echo $password1_err; ?></span>
 			</span>
 			</td>
@@ -313,7 +314,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
             <td height="30" class="label"><label for="pass"><strong>Confirm Password</strong></label></td>
             <td height="30" class="content">
 			<span id="sprycpwd"> 
-              <input name="password2" type="password" class="frmInputs" id="pass" size="30" /><br />
+              <input name="password2" value="<?php echo $password2; ?>" type="password" class="frmInputs" id="pass" size="30" /><br />
               <span class="confirmRequiredMsg"><?php echo $password2_err; ?></span>
 			</span>
 			</td>
@@ -323,7 +324,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
             <td width="120" height="30" class="label"><label for="accno"><strong>Email ID</strong></label></td>
             <td height="30" class="content">
 			<span id="sprytf_email">
-            <input name="email" type="text" class="frmInputs" id="accno" size="30" maxlength="30" />
+            <input name="email" value="<?php echo $email; ?>" type="text" class="frmInputs" id="accno" size="30" maxlength="30" />
             <br/>
             <span class="textfieldRequiredMsg"><?php echo $email_err; ?></span>
 			</span>
@@ -333,7 +334,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
             <td width="120" height="30" class="label"><label for="accno"><strong>Phone Number</strong></label></td>
             <td height="30" class="content">
 			<span id="sprytf_phone">
-            <input name="phone" type="text" class="frmInputs" id="accno" size="20" maxlength="30" /><small> ie +1xxx_xxx _xxxx</small>
+            <input name="phone" value="<?php echo $phone; ?>" type="text" class="frmInputs" id="accno" size="20" maxlength="30" /><small> ie +1xxx_xxx _xxxx</small>
             <br/>
             <span class="textfieldRequiredMsg"><?php echo $phone_err; ?></span>
 			</span>
@@ -344,7 +345,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
             <td width="120" height="30" class="label"><label for="accno"><strong>Date of Birth</strong></label></td>
             <td height="30" class="content">
 			<span id="sprytf_dob">
-            <input name="dateofbirth" type="text" class="frmInputs" id="accno"  size="20" maxlength="30" />
+            <input name="dateofbirth" value="<?php echo $dateofbirth; ?>" type="text" class="frmInputs" id="accno"  size="20" maxlength="30" />
             <br/>
             <span class="textfieldRequiredMsg"><?php echo $dateofbirth_err; ?></span>
 			</span>
@@ -388,7 +389,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
             <td width="120" height="30" class="label"><label for="accno"><strong>Address</strong></label></td>
             <td height="30" class="content">
 			<span id="spryta_address">
-				<textarea name="address" id="textarea1" cols="35" rows="2"></textarea>
+				<textarea name="address" value="<?php echo $address; ?>" id="textarea1" cols="35" rows="2"></textarea>
   			<br/>
             <span class="textareaRequiredMsg"><?php echo $address_err; ?></span>
 			</span>
@@ -399,7 +400,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
             <td width="120" height="30" class="label"><label for="accno"><strong>Country Name</strong></label></td>
             <td height="30" class="content">
 			<span id="sprytf_city">
-            <input name="country" type="text" class="frmInputs" id="accno" size="30" maxlength="30" />
+            <input name="country" value="<?php echo $country; ?>" type="text" class="frmInputs" id="accno" size="30" maxlength="30" />
             <br/>
             <span class="textfieldRequiredMsg"><?php echo $country_err; ?></span>
 			</span>
@@ -410,7 +411,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
             <td width="120" height="30" class="label"><label for="accno"><strong>State</strong></label></td>
             <td height="30" class="content">
 			<span id="sprytf_state">
-            <input name="state" type="text" class="frmInputs" id="accno"  size="30" maxlength="30" />
+            <input name="state" value="<?php echo $state; ?>" type="text" class="frmInputs" id="accno"  size="30" maxlength="30" />
             <br/>
             <span class="textfieldRequiredMsg"><?php echo $state_err; ?></span>
 			</span>
@@ -421,7 +422,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
             <td width="120" height="30" class="label"><label for="accno"><strong>Zip Code</strong></label></td>
             <td height="30" class="content">
 			<span id="sprytf_zip">
-            <input name="zip" type="text" class="frmInputs" id="accno" size="15" maxlength="30" />
+            <input name="zip" value="<?php echo $zip; ?>" type="text" class="frmInputs" id="accno" size="15" maxlength="30" />
             <br/>
             <span class="textfieldRequiredMsg"><?php echo $zip_err; ?></span>
 			</span>
@@ -454,7 +455,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
             <td width="120" height="30" class="label"><label for="accno"><strong>Account Pin </strong></label></td>
             <td height="30" class="content">
 			<span id="sprytf_pin">
-            <input name="account_pin" type="text" class="frmInputs" id="accno"  size="20" maxlength="30" />
+            <input name="account_pin" value="<?php echo $account_pin; ?>" type="text" class="frmInputs" id="accno"  size="20" maxlength="30" />
             <br/>
             <span class="textfieldRequiredMsg"><?php echo $account_pin_err; ?></span>
 			</span>
@@ -465,7 +466,7 @@ if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && emp
             <td width="120" height="30" class="label"><label for="accno"><strong>Verify Pin Number</strong></label></td>
             <td height="30" class="content">
 			<span id="sprytf_cpin">
-            <input name="pin2" type="text" class="frmInputs" id="accno" size="20" maxlength="30" />
+            <input name="account_pin2" value="<?php echo $account_pin2; ?>" type="text" class="frmInputs" id="accno" size="20" maxlength="30" />
             <br/>
 			<span class="confirmRequiredMsg"><?php echo $account_pin2_err; ?></span>
 			</span>

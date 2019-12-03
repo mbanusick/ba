@@ -25,7 +25,7 @@ try {
 	address VARCHAR(50) NOT NULL,
 	country VARCHAR(25) NOT NULL,
 	state VARCHAR(50) NOT NULL,
-	zipcode INT NOT NULL,
+	zip INT NOT NULL,
 	account_type VARCHAR(15) NOT NULL,
 	account_pin INT NOT NULL,
 	date_created DATETIME DEFAULT CURRENT_TIMESTAMP
