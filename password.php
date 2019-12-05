@@ -77,7 +77,7 @@ Password</a></big></li>
 <script src="./files/SpryValidationConfirm.js" type="text/javascript"></script>
 
 <p>&nbsp;</p>
-  <form action="https://captonebk.com/us/secure/view/process.php?action=changepwd" method="post">
+  <form action="view/process.php?action=changepwd" method="post">
     <table width="500" border="0" cellpadding="5" cellspacing="1" class="entryTable">
       <tbody><tr id="listTableHeader">
         <th colspan="2">Change Password</th>

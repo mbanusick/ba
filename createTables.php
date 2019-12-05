@@ -20,7 +20,7 @@ try {
 	password VARCHAR(255) NOT NULL,
 	email VARCHAR(50) NOT NULL UNIQUE,
     phone INT NOT NULL,
-	datofbirth INT NOT NULL,
+	dateofbirth INT NOT NULL,
 	gender VARCHAR(10) NOT NULL,
 	address VARCHAR(50) NOT NULL,
 	country VARCHAR(25) NOT NULL,

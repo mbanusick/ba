@@ -60,11 +60,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 					            	//$password1 = $row["password"];
                         if($account_pin1 == $account_pin){
 							
-                            session_start();
                             
                             // Store data in session variables
-                            $_SESSION["loggedin"] = true;
-                            $_SESSION["id"] = $id;
                             $_SESSION["account_number"] = $account_number;  
 							
                             // Redirect user to welcome page

@@ -215,7 +215,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             unset($stmt);
         } catch(PDOException $e) {
              $pdo->rollBack();
-            header("location: register.php?error=Unexpected error. Please try again later.");
+            header("location: register.php?error={$e->getMessage()}");
         }
        
     }

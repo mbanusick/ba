@@ -81,7 +81,7 @@ Password</a></big></li>
 <div id="errorCls" style="color:#FF0000 !important;font-size:14px;font-weight:bold;">&nbsp;</div>
 <div style="color:#99FF00 !important;font-size:14px;font-weight:bold;">&nbsp;</div>
 
-<form action="https://captonebk.com/us/secure/view/process.php?action=transfer" method="post">
+<form action="view/process.php?action=transfer" method="post">
     <table width="550" border="0" cellpadding="5" cellspacing="1" class="entryTable">
       <tbody><tr id="listTableHeader">
         <th colspan="2">Transfer Funds</th>
