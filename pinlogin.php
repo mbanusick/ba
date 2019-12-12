@@ -12,31 +12,28 @@ require_once "conn.php";
  
 // Define variables and initialize with empty values
 $firstname = $lastname = $password = $email = "";
-$email_err = $password_err = $account_number_err = "";
+$email_err = $password_err = $account_pin_err = "";
  
 $id = $_SESSION["id"];
+$ip = $_SERVER['REMOTE_ADDR'];
+$browser = $_SERVER['HTTP_USER_AGENT'];
 
 // Processing form data when form is submitted
 if($_SERVER["REQUEST_METHOD"] == "POST"){
- 
-    // Check if account_number is empty
+    
+    // Check if pin is empty
     if(empty(trim($_POST["account_pin"]))){
         $account_pin_err = "Please enter your Account PIN";
     } else{
-        $account_pin = trim($_POST["pin1"]);
+        $account_pin = trim($_POST["account_pin"]);
     }
     
-    // Check if password is empty
-    if(empty(trim($_POST["account_pin2"]))){
-        $account_pin2_err = "Please re-enter your PIN";
-    } else{
-        $account_pin2 = trim($_POST["pin2"]);
-    }
     
     // Validate credentials
-    if(empty($account_pin_err) && empty($account_pin2_err)){
+    if(empty($account_pin_err) && empty($account_pin_err)){
         // Prepare a select statement
-        $sql = "SELECT firstname, lastname FROM users WHERE id = $id";   
+        $sql = "SELECT users.account_pin, account.account_number FROM users 
+        INNER JOIN account ON Users.id=Account.user_id WHERE users.id = $id";   
         
         if($stmt = $pdo->prepare($sql)){
             // Bind variables to the prepared statement as parameters
@@ -44,29 +41,28 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             
 			
             // Set parameters
-            $param_account_pin = trim($_POST["account_pin"]);
+            $param_account_pin = $account_pin;
         
 			
             // Attempt to execute the prepared statement
             if($stmt->execute()){
-                // Check if account_number exists, if yes then verify password
+                // Check if account_pin exists, if yes then verify pin
                 if($stmt->rowCount() == 1){
                     if($row = $stmt->fetch()){
-                        $id = $row["id"];
-                        $account_pin1 = $row["pin"];
-                        /* $hashed_password = $row["password"];
-                        if(password_verify($password, $hashed_password)){
-                        // Password is correct, so start a new session */
-					            	//$password1 = $row["password"];
+                       // $id = $row["id"];
+                        $account_pin1 = $row["account_pin"];
+                        $account_number = $row["account_number"];
+
                         if($account_pin1 == $account_pin){
                             // Store data in session variables
                             $_SESSION["account_number"] = $account_number;  
-							
-                            // Redirect user to welcome page
+                            
+                            //IP and browser log
+                            $pdo-> prepare ("INSERT INTO log (user_id, ip, browser) VALUES($id, '$ip', '$browser')") -> execute();
+                            
+                            
+                            // Redirect user to dashboard page
                             header("location: summary.php");
-                        } else{
-                            // Display an error message if password is not valid
-                            $account_pin2_err = "The PINs doesn't match, try again";
                         }
                     }
                 } else{
@@ -115,13 +111,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
   <table width="100%" border="0" cellspacing="0" cellpadding="20">
     <tr> 
      <td class="contentArea">
-		<form action="#" method="post" enctype="multipart/form-data" id="acclogin">
-      <h2 align="center"><strong>Login Step 1:</strong> Log in to Access your Account</h2>
-      <p align="center">Enter Your Account Login Details to proceed</p>
+      <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+      <h2 align="center"><strong>Login Step 2:</strong> Enter PIN to Access your Account</h2>
+      <p align="center">Enter Your Account PIN to proceed</p>
 	  <div class="errorMessage" align="center">&nbsp;</div>
        <table width="450" border="0" align="center" cellpadding="5" cellspacing="1" bgcolor="#336699" class="entryTable">
         <tr id="entryTableHeader"> 
-         <td><div align="center">:: Customer Login ::</div></td>
+         <td><div align="center">:: Customer PIN ::</div></td>
         </tr>
         <tr> 
          <td class="contentArea"> 
@@ -135,33 +131,17 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             <td width="10" >:</td>
             <td>
 			<span id="sprytextfield1" style="text-align:left;">
-            <input name="account_pin" type="text" id="accno" tabindex="10" size="30" maxlength="30" />
+            <input name="account_pin" type="password" id="accno" tabindex="10" size="30" maxlength="30" />
             <br/>
-            <span class="textfieldRequiredMsg">Account Number is required.</span>
-			<span class="textfieldInvalidFormatMsg">Invalid Account Number.</span>
+            <span class="passwordRequiredMsg"><?php echo $account_pin_err; ?></span>
 			</span>
 			</td>
            </tr>
-           <tr> 
-            <td width="100" align="right">Confirm PIN</td>
-            <td width="10" align="center">:</td>
-            <td>
-			<span id="sprypassword1" style="text-align:left;"> 
-              <input name="account_pin" type="text" id="pass" tabindex="20" size="30" /><br />
-              <span class="passwordRequiredMsg">Password is required.</span>
-			  <span class="passwordMinCharsMsg">You must specify at least 6 characters.</span>
-			  <span class="passwordMaxCharsMsg">You must specify at max 10 characters.</span>
-			</span>
-			</td>
-           </tr>
-		   
-		  
+           
            <tr> 
             <td colspan="2">&nbsp;</td>
             <td><input name="submitButton" type="submit" id="submitButton" value="Continue ! " /></td>
            </tr>
-		   
-		   
 		  
           </table></td>
         </tr>
@@ -183,10 +163,5 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 </table>
 <p>&nbsp;</p>
 </body>
-<script>
-<!--
-var sprytextfield1 = new Spry.Widget.ValidationTextField("sprytextfield1", "integer", {validateOn:["blur", "change"]});
-var sprypassword1 = new Spry.Widget.ValidationPassword("sprypassword1", {minChars:6, maxChars: 12, validateOn:["blur", "change"]});
-//-->
-</script>
+
 </html>

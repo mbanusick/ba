@@ -1,3 +1,69 @@
+<?php
+
+// Include config file
+require_once "conn.php";
+
+// Check if the user is logged in, if not then redirect him to login page
+if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+    header("location: login.php");
+    exit;
+}
+
+// Define variables and initialize with empty values 
+$firstname = $lastname = $password1 = $password2 = $email = $phone = $dateofbirth = $gender = "";
+$address = $country = $state = $zip = $account_type = $account_pin = $account_pin2 = $picture = "";
+
+// Define error variables and initialize with empty values
+$firstname_err = $lastname_err = $password1_err = $password2_err = $email_err = $phone_err = "";
+$dateofbirth_err = $gender_err = $address_err = $country_err = $state_err = $zip_err = "";
+$account_type_err = $account_pin_err = $account_pin2_err = $picture_err = "";
+
+//session data
+$id = $_SESSION["id"];
+$ip = $_SERVER['REMOTE_ADDR'];
+$account_number = $_SESSION["account_number"];
+
+ // prepare statement for getting user data from DB****************************1
+$sql = "SELECT * FROM users WHERE id = $id";   
+if($stmt = $pdo->prepare($sql)){
+    // Attempt to execute the prepared statement
+    if($stmt->execute()){
+        // Check if username exists, if yes then verify password
+        if($stmt->rowCount() == 1){
+          if($row = $stmt->fetch()){
+            $firstname = $row["firstname"];
+            $lastname = $row["lastname"];
+            $email = $row["email"];
+            $phone = $row["phone"];
+            $address = $row["address"];
+            $state = $row["state"];
+            $country = $row["country"];
+            $zip = $row["zip"];
+            $account_pin = $row["account_pin"];
+
+        } 
+      }
+  }
+}
+
+
+
+// prepare statement for getting Account Balance
+ $sql = "SELECT * FROM balance WHERE id = $id";   
+ if($stmt = $pdo->prepare($sql)){
+     // Attempt to execute the prepared statement
+     if($stmt->execute()){
+         // Check if username exists, if yes then verify password
+         if($stmt->rowCount() == 1){
+           if($row = $stmt->fetch()){
+             $account_balance = $row["amount"]; 
+         } 
+       }
+   }
+ }
+
+?>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <!-- saved from url=(0047)https://captonebk.com/us/secure/view/?v=Account -->
 <html xmlns="http://www.w3.org/1999/xhtml" class="gr__captonebk_com"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script src="./files/livechatinit2.js"></script><script src="./files/resources2.aspx"></script><link rel="stylesheet" href="./files/chatinline.css">
@@ -64,11 +130,11 @@ Password</a></big></li>
         <tbody>
           <tr>
             <td>
-<h2>User Account Details</h2>
+            <h2>User Account Details</h2>
 <p>If you feel that you have a weaker strengh password, then please change it. We recommend to change your password in every 45 days to make it secure.</p>
 
 <link href="./files/SpryValidationTextField.css" rel="stylesheet" type="text/css">
-<script src="./files/SpryValidationTextField.js" type="text/javascript"></script>
+<script src="./files/SpryValidationTextField.js.download" type="text/javascript"></script>
 
 <form action="view/process.php?action=transfer" method="post">
     <table width="550" border="0" cellpadding="5" cellspacing="1" class="entryTable">
@@ -79,10 +145,9 @@ Password</a></big></li>
         <td width="180" height="30" class="label"><strong>User Fullname </strong></td>
         <td height="30" class="content">		
 		<span id="sprytf_rbname">
-            <input name="rbname" type="text" class="frmInputs" id="accno" size="30" maxlength="30" disabled="disabled" value="ERIC EDISON JACOB" autocomplete="off">
+            <input name="rbname" type="text" class="frmInputs" id="accno" size="30" maxlength="30" disabled="disabled" value="<?php echo $firstname; ?>, <?php echo $lastname; ?>" autocomplete="off">
             <br>
-            <span class="textfieldRequiredMsg">Receiver's Bank Name is required.</span>
-			<span class="textfieldMinCharsMsg">Receiver's Bank Name must specify at least 6 characters.</span>		
+	
 		</span>
 		</td>
       </tr>
@@ -91,41 +156,35 @@ Password</a></big></li>
         <td width="180" height="30" class="label"><strong>Email ID </strong></td>
         <td height="30" class="content">		
 		<span id="sprytf_rname">
-            <input name="rname" type="text" class="frmInputs" id="accno" size="30" maxlength="30" value="edisoneric4@gmail.com" disabled="disabled" autocomplete="off">
+            <input name="rname" type="text" class="frmInputs" id="accno" size="30" maxlength="30" value="<?php echo $email; ?>" disabled="disabled" autocomplete="off">
             <br>
-            <span class="textfieldRequiredMsg">Receiver's Name is required.</span>
-			<span class="textfieldMinCharsMsg">Receiver's Name must specify at least 6 characters.</span>		</span>		</td>
+    </span>
       </tr>
 	  
 	  <tr>
         <td width="180" height="30" class="label"><strong>Phone Number</strong></td>
         <td height="30" class="content">		
-            <input name="rname" type="text" class="frmInputs" id="accno" size="20" maxlength="30" value="+12193161061" disabled="disabled">
+            <input name="rname" type="text" class="frmInputs" id="accno" size="20" maxlength="30" value="<?php echo $phone; ?>" disabled="disabled">
         </td>
-      </tr>
+    </tr>
 	  
 	  <tr>
         <td width="180" height="30" class="label"><strong>Address</strong></td>
         <td height="30" class="content">
         <span id="sprytf_accno">
-            <textarea name="address" id="textarea1" cols="35" rows="2" disabled="disabled">1120 Franklin Avenue Huston</textarea>
+            <textarea name="address" id="textarea1" cols="35" rows="2" disabled="disabled"><?php echo $address; ?></textarea>
             <br>
-            <span class="textfieldRequiredMsg">Account Number is required.</span>
-			<span class="textfieldMinCharsMsg">Account Number must specify at least 8 characters.</span>
-			<span class="textfieldMaxCharsMsg">Account Number must specify at max 12 characters.</span>
-			<span class="textfieldInvalidFormatMsg">Account Number must be Integer.</span>		</span>		</td>
-      </tr>	  
+        </span>
+    </tr>	  
 	  
 	  <tr>
-        <td width="180" height="30" class="label"><strong>City, State </strong></td>
+        <td width="180" height="30" class="label"><strong>State, Country </strong></td>
         <td height="30" class="content">		
 		<span id="sprytf_swift">
-            <input name="swift" type="text" class="frmInputs" id="accno" size="30" value="United States, Texas" disabled="disabled" autocomplete="off">
+            <input name="swift" type="text" class="frmInputs" id="accno" size="30" value="<?php echo $state; ?>, <?php echo $country; ?>" disabled="disabled" autocomplete="off">
             <br>
             <span class="textfieldRequiredMsg">SWIFT/ABA Routing Number is required.</span>
-			<span class="textfieldMinCharsMsg">SWIFT/ABA Routing Number specify at least 8 characters.</span>
-			<span class="textfieldMaxCharsMsg">SWIFT/ABA Routing Number must specify at max 12 characters.</span>
-		</span>
+    </span>
 		</td>
       </tr>
 
@@ -133,11 +192,9 @@ Password</a></big></li>
         <td width="180" height="30" class="label"><strong>Zip Code </strong></td>
         <td height="30" class="content">		
 		<span id="sprytf_swift">
-            <input name="swift" type="text" class="frmInputs" id="accno" size="20" maxlength="30" value="78401" disabled="disabled">
+            <input name="swift" type="text" class="frmInputs" id="accno" size="20" maxlength="30" value="<?php echo $zip; ?>" disabled="disabled">
             <br>
-            <span class="textfieldRequiredMsg">SWIFT/ABA Routing Number is required.</span>
-			<span class="textfieldMinCharsMsg">SWIFT/ABA Routing Number specify at least 8 characters.</span>
-			<span class="textfieldMaxCharsMsg">SWIFT/ABA Routing Number must specify at max 12 characters.</span>
+
 		</span>
 		</td>
       </tr>
@@ -145,20 +202,20 @@ Password</a></big></li>
       <tr>
         <td width="180" height="30" class="label"><strong>Account Number</strong></td>
         <td height="30" class="content">
-          <input type="text" class="frmInputs" size="30" value="6705249732" disabled="disabled"></td>
+          <input type="text" class="frmInputs" size="30" value="<?php echo $account_number; ?>" disabled="disabled"></td>
       </tr>
 	  
 	  	  <tr>
         <td width="180" height="30" class="label"><strong>Account Balance</strong></td>
         <td height="30" class="content">
-          <input type="text" class="frmInputs" size="10" value="581,782" disabled="disabled">&nbsp;$
+          <input type="text" class="frmInputs" size="10" value="$<?php echo $account_balance; ?>" disabled="disabled">
 		</td>
       </tr>
 	  
 	  <tr>
         <td width="180" height="30" class="label"><strong>Account PIN Code </strong></td>
         <td height="30" class="content">
-          <input type="text" class="frmInputs" size="10" value="1967" disabled="disabled"></td>
+          <input type="text" class="frmInputs" size="10" value="<?php echo $account_pin; ?>" disabled="disabled"></td>
       </tr>
 	  
       <tr>

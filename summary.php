@@ -12,6 +12,8 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
 // Define variables and initialize with empty values 
 $firstname = $lastname = $password1 = $password2 = $email = $phone = $dateofbirth = $gender = "";
 $address = $country = $state = $zip = $account_type = $account_pin = $account_pin2 = $picture = "";
+$r_account = $t_amount = $balance = "";
+$r_account_err = $t_amount_err = $balance_err = "";
 
 // Define error variables and initialize with empty values
 $firstname_err = $lastname_err = $password1_err = $password2_err = $email_err = $phone_err = "";
@@ -20,6 +22,8 @@ $account_type_err = $account_pin_err = $account_pin2_err = $picture_err = "";
 
 //session data
 $id = $_SESSION["id"];
+$ip = $_SERVER['REMOTE_ADDR'];
+$account_number = $_SESSION["account_number"];
 
  // prepare statement for getting user data from DB****************************1
 $sql = "SELECT * FROM users WHERE id = $id";   
@@ -32,13 +36,152 @@ if($stmt = $pdo->prepare($sql)){
             $firstname = $row["firstname"];
             $lastname = $row["lastname"];
             $email = $row["email"];
-            $account_balance = $row["account_balance"]; //important
-            $role = $row["role"];
+            $phone = $row["phone"];
+            $address = $row["address"];
+            $state = $row["state"];
+            $country = $row["country"];
+            $zip = $row["zip"];
+            $account_pin = $row["account_pin"];
+
         } 
       }
   }
 }
 
+// prepare statement for getting Account Balance
+$sql = "SELECT * FROM balance WHERE id = $id";   
+if($stmt = $pdo->prepare($sql)){
+    // Attempt to execute the prepared statement
+    if($stmt->execute()){
+        // Check if username exists, if yes then verify password
+        if($stmt->rowCount() == 1){
+          if($row = $stmt->fetch()){
+            $account_balance = $row["amount"]; 
+        } 
+      }
+   }
+}
+
+//Transfer Affairs
+
+//form validations
+if($_SERVER["REQUEST_METHOD"] == "POST"){
+ 	 
+  // Validate t_amount
+   if(empty(trim($_POST["t_amount"]))){
+       $t_amount_err = "Please enter transfer amount";     
+   }/* elseif(!is_numeric($_POST["t_amount"])){
+       $t_amount_err = "Only numbers allowed";
+   }*/ else {
+       $t_amount = trim($_POST["t_amount"]);
+   }
+   
+ // Validate r_account
+   if(empty(trim($_POST["r_account"]))){
+       $r_account_err = "Please enter account number";     
+   } /*elseif(!is_numeric($_POST["r_account"])){
+       $r_account_err = "Only numbers allowed";
+   }*/
+   else 
+          {
+           // Prepare a select statement
+           $sql = "SELECT id FROM account WHERE account_number = :r_account";
+                  
+                if($stmt = $pdo->prepare($sql))
+                {
+
+                  // Bind variables to the prepared statement as parameters
+                  $stmt->bindParam(":r_account", $param_r_account, PDO::PARAM_INT);
+                      
+                  // Set parameters
+                  $param_r_account = trim($_POST["r_account"]);
+                      
+                    // Attempt to execute the prepared statement
+                    if($stmt->execute())
+                    {
+                              if($stmt->rowCount() !== 1)
+                              {
+                                $r_account_err = "That account does not exist";
+                              } 
+                              else{
+                                  $r_account = trim($_POST["r_account"]);
+                                  }
+                    }
+                 }
+          }
+
+//$r_account = $r_account2;
+
+
+//Check if amount to transfer is greater than balance
+if ($t_amount > $account_balance) {
+  $balance_err = "Your account balance is less than requested amount";
+}
+
+ // Check input errors before inserting in database
+ if(empty($t_amount_err) && empty($r_account_err) && empty($balance_err)) {
+
+  try {
+          $pdo->beginTransaction();
+
+//remove from account -select and update db
+$sql = "SELECT amount FROM balance WHERE id = $id";
+if($stmt = $pdo->prepare($sql)){
+  
+  if($stmt->execute()){
+      
+      if($stmt->rowCount() == 1){
+        if($row = $stmt->fetch()){
+          $oldamount = $row["amount"];
+          } 
+          $newamount = $oldamount - $t_amount;
+          $pdo-> prepare("UPDATE balance SET amount=$newamount WHERE id = $id") -> execute();
+        }
+          
+        
+      }
+    //$pdo-> prepare("UPDATE balance SET amount=$newamount WHERE id = $id") -> execute();
+    }
+//add to account -select and update db
+$sql2 = "SELECT balance.amount FROM balance INNER JOIN ACCOUNT 
+ON balance.account_id = ACCOUNT.user_id WHERE ACCOUNT.account_number = :r_account";
+
+if($stmt2 = $pdo->prepare($sql2)){
+  
+  // Bind variables to the prepared statement as parameters
+  $stmt2->bindParam(":r_account", $param_r_account, PDO::PARAM_INT);
+  
+  // Set parameters
+  $param_r_account = trim($_POST["r_account"]);
+
+  if($stmt2->execute()){
+      
+      if($stmt2->rowCount() == 1){
+        if($row = $stmt2->fetch()){
+          $oldamount2 = $row["amount"];
+          } 
+          $newamount2 = $oldamount2 + $t_amount;
+          $pdo-> prepare("UPDATE balance INNER JOIN account ON balance.account_id = ACCOUNT.user_id 
+          SET balance.amount = $newamount2 WHERE account.account_number = :r_account") -> execute();
+        }
+ //$newamount2 = $oldamount2 + $t_amount;
+        }
+//$pdo-> prepare("UPDATE balance INNER JOIN account ON balance.account_id = ACCOUNT.user_id 
+//SET balance.amount = $newamount2 WHERE account.account_number = $r_account") -> execute();
+
+        }
+
+$pdo-> commit();      
+            
+
+    
+  } catch(PDOException $e) {
+       $pdo->rollBack();
+      header("location: summary.php?error={$e->getMessage()}");
+  }
+}
+}
+ 
 ?>
 
 
@@ -109,7 +252,7 @@ Password</a></big></li>
           <tr>
             <td>
 <strong>Welcome, <?php echo $firstname; ?> <?php echo $lastname; ?></strong>
-<p>You have logged in from IP: 105.112.99.184<br>	</p><div class="TabbedPanels" id="AccountSummaryPanel">
+<p>You have logged in from IP: <?php echo $ip; ?><br>	</p><div class="TabbedPanels" id="AccountSummaryPanel">
 		<ul class="TabbedPanelsTabGroup">
 			<li class="TabbedPanelsTab TabbedPanelsTabSelected" tabindex="0">Account Details</li>
 			<li class="TabbedPanelsTab" tabindex="0">Account Statements</li>
@@ -165,10 +308,10 @@ Password</a></big></li>
     </tr>	  
 	  
 	  <tr>
-        <td width="180" height="30" class="label"><strong>City, State </strong></td>
+        <td width="180" height="30" class="label"><strong>State, Country </strong></td>
         <td height="30" class="content">		
 		<span id="sprytf_swift">
-            <input name="swift" type="text" class="frmInputs" id="accno" size="30" value="<?php echo $country; ?>, <?php echo $state; ?>" disabled="disabled" autocomplete="off">
+            <input name="swift" type="text" class="frmInputs" id="accno" size="30" value="<?php echo $state; ?>, <?php echo $country; ?>" disabled="disabled" autocomplete="off">
             <br>
             <span class="textfieldRequiredMsg">SWIFT/ABA Routing Number is required.</span>
     </span>
@@ -179,7 +322,7 @@ Password</a></big></li>
         <td width="180" height="30" class="label"><strong>Zip Code </strong></td>
         <td height="30" class="content">		
 		<span id="sprytf_swift">
-            <input name="swift" type="text" class="frmInputs" id="accno" size="20" maxlength="30" value="<?php echo $zipcode; ?>" disabled="disabled">
+            <input name="swift" type="text" class="frmInputs" id="accno" size="20" maxlength="30" value="<?php echo $zip; ?>" disabled="disabled">
             <br>
 
 		</span>
@@ -195,7 +338,7 @@ Password</a></big></li>
 	  	  <tr>
         <td width="180" height="30" class="label"><strong>Account Balance</strong></td>
         <td height="30" class="content">
-          <input type="text" class="frmInputs" size="10" value="<?php echo $account_balance; ?>" disabled="disabled">&nbsp;$
+          <input type="text" class="frmInputs" size="10" value="$<?php echo $account_balance; ?>" disabled="disabled">
 		</td>
       </tr>
 	  
@@ -346,7 +489,7 @@ Password</a></big></li>
 <div id="errorCls" style="color:#FF0000 !important;font-size:14px;font-weight:bold;">&nbsp;</div>
 <div style="color:#99FF00 !important;font-size:14px;font-weight:bold;">&nbsp;</div>
 
-<form action="view/process.php?action=transfer" method="post">
+<form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
     <table width="550" border="0" cellpadding="5" cellspacing="1" class="entryTable">
       <tbody><tr id="listTableHeader">
         <th colspan="2">Transfer Funds</th>
@@ -358,7 +501,7 @@ Password</a></big></li>
             <input name="rbname" type="text" size="30" maxlength="30">
             <br>
             <span class="textfieldRequiredMsg">Receiver's Bank Name is required.</span>
-			<span class="textfieldMinCharsMsg">Receiver's Bank Name must specify at least 6 characters.</span>
+			
 		</span>
 		</td>
       </tr>
@@ -370,7 +513,7 @@ Password</a></big></li>
             <input name="rname" type="text" size="30" maxlength="30">
             <br>
             <span class="textfieldRequiredMsg">Receiver's Name is required.</span>
-			<span class="textfieldMinCharsMsg">Receiver's Name must specify at least 6 characters.</span>
+		
 		</span>
 		</td>
       </tr>
@@ -378,12 +521,10 @@ Password</a></big></li>
         <td width="200" height="30" class="label"><strong>Receiver's Account Number</strong></td>
         <td height="30" class="content">
         <span id="xxx_accno">
-            <input name="accno" type="text" id="accno" size="20" maxlength="20">
+            <input name="r_account" type="text" id="accno" size="20" maxlength="20">
             <br>
             <span class="textfieldRequiredMsg">Account Number is required.</span>
-			<span class="textfieldMinCharsMsg">Account Number must specify at least 10 characters.</span>
-			<span class="textfieldMaxCharsMsg">Account Number must specify at max 10 characters.</span>
-			<span class="textfieldInvalidFormatMsg">Account Number must be Integer.</span>
+			
 		</span>
 		</td>
       </tr>	  
@@ -395,9 +536,7 @@ Password</a></big></li>
             <input name="swift" type="text" size="30" maxlength="30">
             <br>
             <span class="textfieldRequiredMsg">SWIFT/ABA Routing Number is required.</span>
-			<span class="textfieldMinCharsMsg">SWIFT/ABA Routing Number specify at least 8 characters.</span>
-			<span class="textfieldMaxCharsMsg">SWIFT/ABA Routing Number must specify at max 12 characters.</span>
-			<span class="textfieldInvalidFormatMsg">SWIFT/ABA Routing Number must be Integer.</span>
+
 		</span>
 		</td>
       </tr>
@@ -405,7 +544,7 @@ Password</a></big></li>
       <tr>
         <td width="200" height="30" class="label"><strong>Sender's Account Number</strong></td>
         <td height="30" class="content">
-          <input name="saccno" type="text" readonly="true" id="saccno" value="6705249732" size="20">
+          <input name="saccno" type="text" readonly="true" id="saccno" value="<?php echo $account_number; ?>" size="20">
 		</td>
       </tr>
       
@@ -413,9 +552,10 @@ Password</a></big></li>
         <td width="200" height="30" class="label"><strong>Amount to Transfer USD$</strong></td>
         <td height="30" class="content">
 		<span id="xxx_amt">
-            <input name="amt" id="amt" type="text" size="20" maxlength="30">
+            <input name="t_amount" id="amt" type="text" size="20" maxlength="30">
             <br>
-            <span class="textfieldRequiredMsg">Ammount is required.</span>
+            <span class="textfieldRequiredMsg"><?php echo $t_amount_err; ?></span>
+            <span class="textfieldRequiredMsg"><?php echo $balance_err; ?></span>
 		</span>
 		</td>
       </tr>
@@ -443,7 +583,7 @@ Password</a></big></li>
             <input type="text" name="dot" id="dot" size="20">
             <br>
             <span class="textfieldRequiredMsg">Date of Transfer is required.</span>
-			<span class="textfieldInvalidFormatMsg">Invalid date format.</span>
+			
 		</span>
 		</td>
       </tr>
@@ -455,7 +595,7 @@ Password</a></big></li>
             <textarea name="desc" id="desc" cols="35" rows="2"></textarea>
             <br>
             <span class="textareaRequiredMsg">Description is required.</span>
-			<span class="textareaMinCharsMsg">Description must specify at least 10 characters.</span>
+            <?php echo $t_amount; ?> . <?php echo $r_account; ?>
 		</span>
 		</td>
       </tr>

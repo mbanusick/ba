@@ -32,11 +32,16 @@ try {
 	)");
     $conn->exec("CREATE TABLE Account (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, 
-    id_user VARCHAR(30) NOT NULL,
-    account_number INT NOT NULL UNIQUE,
-    amount INT NOT NULL,
+    user_id VARCHAR(30) NOT NULL,
+    account_number BIGINT NOT NULL UNIQUE,
     date_created DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
+    $conn->exec("CREATE TABLE Balance (
+        id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, 
+        account_id VARCHAR(30) NOT NULL,
+        amount INT NOT NULL,
+        date_created DATETIME DEFAULT CURRENT_TIMESTAMP
+        )");
 	$conn->exec("CREATE TABLE Transaction (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, 
     details VARCHAR(30) NOT NULL,
@@ -46,6 +51,7 @@ try {
     )");
 	$conn->exec("CREATE TABLE Log (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, 
+    user_id INT NOT NULL,
     ip VARCHAR(55) NOT NULL,
     browser VARCHAR(255) NOT NULL,
 	date_updated DATETIME DEFAULT CURRENT_TIMESTAMP

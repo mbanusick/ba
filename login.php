@@ -5,14 +5,14 @@ require_once "conn.php";
 
 // Check if the user is already logged in, if yes then redirect him to welcome page
 if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
-    // header("location: pin.php");
+    header("location: pinlogin.php");
     print_r($_SESSION);
     exit;
 }
  
 
 // Define variables and initialize with empty values
-$firstname = $lastname = $password = $email = "";
+$firstname = $lastname = $password = $email = $account_number = "";
 $email_err = $password_err = $account_number_err = "";
  
 // Processing form data when form is submitted
@@ -20,7 +20,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
  
     // Check if account_number is empty
     if(empty(trim($_POST["account_number"]))){
-        $account_number = "Please enter your Account Number";
+        $account_number_err = "Please enter your Account Number";
     } else {
         $account_number = trim($_POST["account_number"]);
     }
@@ -33,18 +33,19 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     }
     
     // Validate credentials
-    if(empty($account_number) && empty($password_err)){
+    if(empty($account_number_err) && empty($password_err)){
         // Prepare a select statement
-        $sql = "SELECT id, account_number, password FROM users WHERE account_number = :account_number";
+        $sql = "SELECT Users.id, Account.account_number, Users.password FROM 
+        Users INNER JOIN Account ON Users.id=Account.user_id WHERE account_number = :account_number";
         
         if($stmt = $pdo->prepare($sql)){
             // Bind variables to the prepared statement as parameters
             $stmt->bindParam(":account_number", $param_account_number, PDO::PARAM_INT);
-            
+            //$stmt->bindParam(":password", $param_password, PDO::PARAM_STR);
 			
             // Set parameters
-            $param_account_number = trim($_POST["account_number"]);
-        
+            $param_account_number = $account_number;
+           // $param_password = $password;
 			
             // Attempt to execute the prepared statement
             if($stmt->execute()){
@@ -53,12 +54,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     if($row = $stmt->fetch()){
                         $id = $row["id"];
                         $account_number = $row["account_number"];
-                        /* $hashed_password = $row["password"];
-                        if(password_verify($password, $hashed_password)){
-                        // Password is correct, so start a new session */
-					    $password1 = $row["password"];
+                        $password1 = $row["password"];
                         if($password == $password1){
-							
+						// Password is correct, so start a new session	
                             session_start();
                             
                             // Store data in session variables
@@ -67,10 +65,10 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                              
 							
                             // Redirect user to welcome page
-                            header("location: pin.php");
+                            header("location: pinlogin.php");
                         } else{
                             // Display an error message if password is not valid
-                            $password_err = "The Password you entered was not valid.";
+                            $password_err = "The Password you entered was not valid";
                         }
                     }
                 } else{
@@ -78,7 +76,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     $account_number_err = "No Account found with that Account Number";
                 }
             } else{
-                echo "Oops! Something went wrong. Please try again later.";
+                echo "Oops! Something went wrong. Please try again later";
             }
         }
         
@@ -124,7 +122,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
   <table width="100%" border="0" cellspacing="0" cellpadding="20">
     <tr> 
      <td class="contentArea">
-		<form action="#" method="post" enctype="multipart/form-data" id="acclogin">
+      <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
       <h2 align="center"><strong>Login Step 1:</strong> Log in to Access your Account</h2>
       <p align="center">Enter Your Account Login Details to proceed</p>
 	  <div class="errorMessage" align="center">&nbsp;</div>
@@ -140,14 +138,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             <td colspan="3">&nbsp;</td>
            </tr>
            <tr class="text"> 
-            <td width="100" align="right">Account No#</td>
-            <td width="10" >:</td>
+           <td width="100" align="right">Account No#</td>
+            <td width="10" align="center">:</td>
             <td>
-			<span id="sprytextfield1" style="text-align:left;">
-            <input name="accno" type="text" id="accno" tabindex="10" size="30" maxlength="30" />
-            <br/>
-            <span class="textfieldRequiredMsg">Account Number is required.</span>
-			<span class="textfieldInvalidFormatMsg">Invalid Account Number.</span>
+			<span id="sprypassword1" style="text-align:left;"> 
+              <input name="account_number" value="<?php echo $account_number; ?>" type="text" id="pass" tabindex="20" size="30" /><br />
+              
+              <span class="passwordRequiredMsg"><?php echo $account_number_err; ?></span>
 			</span>
 			</td>
            </tr>
@@ -156,10 +153,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             <td width="10" align="center">:</td>
             <td>
 			<span id="sprypassword1" style="text-align:left;"> 
-              <input name="pass" type="password" id="pass" tabindex="20" size="30" /><br />
-              <span class="passwordRequiredMsg">Password is required.</span>
-			  <span class="passwordMinCharsMsg">You must specify at least 6 characters.</span>
-			  <span class="passwordMaxCharsMsg">You must specify at max 10 characters.</span>
+              <input name="password" type="password" id="pass" tabindex="20" size="30" /><br />
+              <span class="passwordRequiredMsg"><?php echo $password_err; ?></span>
 			</span>
 			</td>
            </tr>
