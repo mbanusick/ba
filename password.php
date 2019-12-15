@@ -1,8 +1,160 @@
+<?php
+
+// Include config file
+require_once "conn.php";
+
+// Check if the user is logged in, if not then redirect him to login page
+if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+    header("location: login.php");
+    exit;
+}
+
+// Define variables and initialize with empty values 
+$firstname = $lastname = $password = $oldpassword = $password2 = $email = $phone = $dateofbirth = $gender = "";
+$address = $country = $state = $zip = $account_type = $account_pin = $account_pin2 = $picture = "";
+$r_account = $t_amount = $account_balance = "";
+$r_account_err = $t_amount_err = $account_balance_err = $oldpassword_err = "";
+
+// Define error variables and initialize with empty values
+$firstname_err = $lastname_err = $password_err = $password2_err = $email_err = $phone_err = "";
+$dateofbirth_err = $gender_err = $address_err = $country_err = $state_err = $zip_err = "";
+$account_type_err = $account_pin_err = $account_pin2_err = $picture_err = "";
+
+//session data
+$id = $_SESSION["id"];
+$ip = $_SERVER['REMOTE_ADDR'];
+$account_number = $_SESSION["account_number"];
+
+ // prepare statement for getting user data from DB****************************1
+$sql = "SELECT * FROM users WHERE id = $id";   
+if($stmt = $pdo->prepare($sql)){
+    // Attempt to execute the prepared statement
+    if($stmt->execute()){
+        // Check if username exists, if yes then verify password
+        if($stmt->rowCount() == 1){
+          if($row = $stmt->fetch()){
+            $firstname = $row["firstname"];
+            $lastname = $row["lastname"];
+            $email = $row["email"];
+            $phone = $row["phone"];
+            $address = $row["address"];
+            $state = $row["state"];
+            $country = $row["country"];
+            $zip = $row["zip"];
+            $account_pin = $row["account_pin"];
+
+        } 
+      }
+  }
+}
+
+//Password change section
+
+if(isset($_POST["oldpassword"]) && isset($_POST["password"]) && isset($_POST["password2"])) {
+  // Check if password is empty
+  if(empty(trim($_POST["oldpassword"]))){
+      $password_err = "Please enter your old password.";
+  } else{
+      $password = trim($_POST["oldpassword"]);
+  }
+
+if(empty(trim($_POST["password"]))) {
+  $password_err = "Please enter your new password.";
+} else {
+  // Check if both passwords match
+  
+  if(trim($_POST["password"]) !== trim($_POST["password2"])) {
+    $password2_err = "Both passwords doesn't match";
+  } else {
+    $password1 = trim($_POST["password"]);
+  }
+}
+
+  
+  // Validate credentials
+  if(empty($password_err)){
+      // Prepare a select statement
+      $sql = "SELECT password FROM users WHERE id = :id";
+      
+      if($stmt = $pdo->prepare($sql)){
+          // Bind variables to the prepared statement as parameters
+         // $stmt->bindParam(":username", $param_username, PDO::PARAM_STR);
+          $stmt->bindParam(":id", $param_id, PDO::PARAM_INT);
+    
+          // Set parameters
+         // $param_username = trim($_POST["username"]);
+    $param_id = $_SESSION["id"];
+    
+          // Attempt to execute the prepared statement
+          if($stmt->execute()){
+              // Check if username exists, if yes then verify password
+              if($stmt->rowCount() == 1){
+                  if($row = $stmt->fetch()){
+                      //$hashed_password = $row["password"];
+          $passwordold = $row["password"];
+
+                      //if(password_verify($password, $hashed_password)){
+           if($oldpassword = $passwordold){
+          
+          if(empty($password_err1) && empty($password_err2)){
+          
+            // Prepare a select statement
+            $sql = "UPDATE users SET password = :password WHERE id = :id";
+      
+            if($stmt = $pdo->prepare($sql)){
+              // Bind variables to the prepared statement as parameters
+              $stmt->bindParam(":password", $param_password1, PDO::PARAM_STR);
+              $stmt->bindParam(":id", $param_id, PDO::PARAM_INT);
+              
+              // Set parameters
+              //$param_password1 = password_hash($password1, PASSWORD_DEFAULT); 
+              $param_password1 = $password; 
+              
+              // Creates a password hash
+              $param_id = $_SESSION["id"];
+              
+              // Attempt to execute the prepared statement
+              if($stmt->execute()){
+                    
+                    
+                //$suc = "New password created.";
+                header("location: password.php?success=New password created");
+                
+                
+                } else{
+                  // Display an error message if password is not valid
+                  $password_err = "The password you entered was not valid.";
+                }
+              }
+            } else{
+              // Display an error message if username doesn't exist
+              $username_err = "No account found with that username.";
+            }
+          } else{
+              $oldpassword_err = "Oops! Something went wrong. Please try again later.";
+          }
+      }
+      
+      // Close statement
+      unset($stmt);
+  }
+  
+  // Close connection
+  
+}
+}
+}
+}
+
+
+?>
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <!-- saved from url=(0049)https://captonebk.com/us/secure/view/?v=ChangePwd -->
 <html xmlns="http://www.w3.org/1999/xhtml" class="gr__captonebk_com"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script src="./files/livechatinit2.js"></script><script src="./files/resources2.aspx"></script><link rel="stylesheet" href="./files/chatinline.css">
 
-<title>Change Password </title>
+<title>Change Password</title>
 
 <link href="./files/admin.css" rel="stylesheet" type="text/css">
 <link href="./files/menu.css" rel="stylesheet" type="text/css">
@@ -65,10 +217,9 @@ Password</a></big></li>
           <tr>
             <td>
 <h2>Change Password</h2>
-<p>If you feel that you have a weaker strengh password, then please change it. We recommend to change your password in every 45 days to make it secure.</p>
+<p>If you feel that you have a weaker strength password, then please change it. We recommend to change your password at least once every 45 days to make it secure.</p>
 
 <strong>Password Change guidelines</strong>
-
 
 <link href="./files/SpryValidationPassword.css" rel="stylesheet" type="text/css">
 <script src="./files/SpryValidationPassword.js" type="text/javascript"></script>
@@ -76,32 +227,38 @@ Password</a></big></li>
 <link href="./files/SpryValidationConfirm.css" rel="stylesheet" type="text/css">
 <script src="./files/SpryValidationConfirm.js" type="text/javascript"></script>
 
-<p>&nbsp;</p>
-  <form action="view/process.php?action=changepwd" method="post">
+<form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
     <table width="500" border="0" cellpadding="5" cellspacing="1" class="entryTable">
       <tbody><tr id="listTableHeader">
         <th colspan="2">Change Password</th>
       </tr>
       <tr>
-        <td width="160" height="30" class="label"><strong>User Name</strong></td>
+        <td width="160" height="30" class="label"><strong>Full Name</strong></td>
         <td height="30" class="content">		
-			<input type="text" class="frmInputs" size="40" value="ERIC EDISON JACOB" disabled="disabled">
+			<input type="text" class="frmInputs" size="40" value="<?php echo $firstname; ?> <?php echo $lastname; ?>" disabled="disabled">
 			<input type="hidden" name="id" value="12">
 		</td>
       </tr>
       <tr>
         <td width="160" height="30" class="label"><strong>Account Number</strong></td>
         <td height="30" class="content">
-          <input type="text" class="frmInputs" size="40" value="6705249732" disabled="disabled"></td>
+          <input type="text" class="frmInputs" size="40" value="<?php echo $account_number; ?>" disabled="disabled"></td>
+      </tr>
+      <tr>
+        <td width="160" height="30" class="label"><strong>Old Password</strong></td>
+        <td height="30" class="content">
+		<span id="sprypwd"> 
+              <input name="oldpassword" type="password" class="frmInputs" id="pass" size="30" autocomplete="off"><br>
+              <span class="passwordRequiredMsg"><?php echo $oldpassword_err; ?></span>
+		</span>
+		</td>
       </tr>
       <tr>
         <td width="160" height="30" class="label"><strong>New Password</strong></td>
         <td height="30" class="content">
 		<span id="sprypwd"> 
               <input name="password" type="password" class="frmInputs" id="pass" size="30" autocomplete="off"><br>
-              <span class="passwordRequiredMsg">Password is required.</span>
-			  <span class="passwordMinCharsMsg">You must specify at least 6 characters.</span>
-			  <span class="passwordMaxCharsMsg">You must specify at max 10 characters.</span>
+              <span class="passwordRequiredMsg"><?php echo $password_err; ?></span>
 		</span>
 		</td>
       </tr>
@@ -110,9 +267,8 @@ Password</a></big></li>
         <td width="160" height="30" class="label"><strong>Confirm New Password</strong></td>
         <td height="30" class="content">
 		<span id="sprycpwd"> 
-              <input name="cpassword" type="password" class="frmInputs" id="pass" size="30" autocomplete="off"><br>
-              <span class="confirmRequiredMsg">Confirm Password is required.</span>
-			  <span class="confirmInvalidMsg">Confirm Password values don't match</span>
+              <input name="password2" type="password" class="frmInputs" id="pass" size="30" autocomplete="off"><br>
+              <span class="confirmRequiredMsg"><?php echo $password2_err; ?></span>
 			</span>
 		</td>
       </tr>
@@ -125,12 +281,7 @@ Password</a></big></li>
   </form>
   
 <script type="text/javascript">
-<!--
-//Password
-var sprypass1 = new Spry.Widget.ValidationPassword("sprypwd", {minChars:6, maxChars: 12, validateOn:["blur", "change"]});
-//Confirm Password
-var spryconf1 = new Spry.Widget.ValidationConfirm("sprycpwd", "sprypwd", {minChars:6, maxChars: 12, validateOn:["blur", "change"]});
-//-->
+
 </script></td>
           </tr>
         </tbody>

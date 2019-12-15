@@ -12,8 +12,8 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
 // Define variables and initialize with empty values 
 $firstname = $lastname = $password1 = $password2 = $email = $phone = $dateofbirth = $gender = "";
 $address = $country = $state = $zip = $account_type = $account_pin = $account_pin2 = $picture = "";
-$r_account = $t_amount = $balance = "";
-$r_account_err = $t_amount_err = $balance_err = "";
+$r_account = $t_amount = $account_balance = "";
+$r_account_err = $t_amount_err = $account_balance_err = "";
 
 // Define error variables and initialize with empty values
 $firstname_err = $lastname_err = $password1_err = $password2_err = $email_err = $phone_err = "";
@@ -84,6 +84,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
    }*/
    else 
           {
+            //$r_account = trim($_POST["r_account"]);
            // Prepare a select statement
            $sql = "SELECT id FROM account WHERE account_number = :r_account";
                   
@@ -99,7 +100,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     // Attempt to execute the prepared statement
                     if($stmt->execute())
                     {
-                              if($stmt->rowCount() !== 1)
+                              if($stmt->rowCount() != 1)
                               {
                                 $r_account_err = "That account does not exist";
                               } 
@@ -107,7 +108,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                                   $r_account = trim($_POST["r_account"]);
                                   }
                     }
-                 }
+                 } 
           }
 
 //$r_account = $r_account2;
@@ -115,64 +116,52 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
 //Check if amount to transfer is greater than balance
 if ($t_amount > $account_balance) {
-  $balance_err = "Your account balance is less than requested amount";
+  $account_balance_err = "Your account balance is less than requested amount";
 }
 
  // Check input errors before inserting in database
- if(empty($t_amount_err) && empty($r_account_err) && empty($balance_err)) {
+ if(empty($t_amount_err) && empty($r_account_err) && empty($account_balance_err)) {
 
   try {
           $pdo->beginTransaction();
 
 //remove from account -select and update db
-$sql = "SELECT amount FROM balance WHERE id = $id";
-if($stmt = $pdo->prepare($sql)){
-  
-  if($stmt->execute()){
+
+$newamount = $account_balance - $t_amount;
+$pdo-> prepare("UPDATE balance SET amount=$newamount WHERE id = $id") -> execute();
       
-      if($stmt->rowCount() == 1){
-        if($row = $stmt->fetch()){
-          $oldamount = $row["amount"];
-          } 
-          $newamount = $oldamount - $t_amount;
-          $pdo-> prepare("UPDATE balance SET amount=$newamount WHERE id = $id") -> execute();
-        }
-          
-        
-      }
-    //$pdo-> prepare("UPDATE balance SET amount=$newamount WHERE id = $id") -> execute();
-    }
+//$pdo-> prepare("UPDATE balance SET amount=$newamount WHERE id = $id") -> execute();
+
 //add to account -select and update db
-$sql2 = "SELECT balance.amount FROM balance INNER JOIN ACCOUNT 
+$sql = "SELECT balance.amount, account.account_number FROM balance INNER JOIN ACCOUNT 
 ON balance.account_id = ACCOUNT.user_id WHERE ACCOUNT.account_number = :r_account";
 
-if($stmt2 = $pdo->prepare($sql2)){
+if($stmt = $pdo->prepare($sql)){
   
   // Bind variables to the prepared statement as parameters
-  $stmt2->bindParam(":r_account", $param_r_account, PDO::PARAM_INT);
+  $stmt->bindParam(":r_account", $param_r_account, PDO::PARAM_INT);
   
   // Set parameters
   $param_r_account = trim($_POST["r_account"]);
 
-  if($stmt2->execute()){
+  if($stmt->execute()){
       
-      if($stmt2->rowCount() == 1){
-        if($row = $stmt2->fetch()){
+      if($stmt->rowCount() == 1){
+        if($row = $stmt->fetch()){
           $oldamount2 = $row["amount"];
+          $receive = $row["account_number"];
           } 
           $newamount2 = $oldamount2 + $t_amount;
           $pdo-> prepare("UPDATE balance INNER JOIN account ON balance.account_id = ACCOUNT.user_id 
-          SET balance.amount = $newamount2 WHERE account.account_number = :r_account") -> execute();
-        }
- //$newamount2 = $oldamount2 + $t_amount;
-        }
-//$pdo-> prepare("UPDATE balance INNER JOIN account ON balance.account_id = ACCOUNT.user_id 
-//SET balance.amount = $newamount2 WHERE account.account_number = $r_account") -> execute();
+          SET balance.amount = $newamount2 WHERE account.account_number = $receive") -> execute();
+           }
 
-        }
+     }
+
+  }
 
 $pdo-> commit();      
-            
+header("location: transfer.php");
 
     
   } catch(PDOException $e) {
@@ -189,7 +178,7 @@ $pdo-> commit();
 <html lang="en" class="nojs">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Change account Pin Number</title>
+<title>Account Dashboard: <?php echo $firstname; ?> <?php echo $lastname; ?></title>
 
 <link href="./css/admin.css" rel="stylesheet" type="text/css">
 <link href="./css/menu.css" rel="stylesheet" type="text/css">
@@ -495,30 +484,16 @@ Password</a></big></li>
         <th colspan="2">Transfer Funds</th>
       </tr>
       <tr>
-        <td width="200" height="30" class="label"><strong>Receiver's Bank Name</strong></td>
-        <td height="30" class="content">		
-		<span id="xxx_rbname">
-            <input name="rbname" type="text" size="30" maxlength="30">
-            <br>
-            <span class="textfieldRequiredMsg">Receiver's Bank Name is required.</span>
-			
-		</span>
+      <td width="200" height="30" class="label"><strong>Sender's Account Number</strong></td>
+        <td height="30" class="content">
+          <input name="saccno" type="text" readonly="true" id="saccno" disabled="disabled" value="<?php echo $account_number; ?>" size="20">
+          <span class="textfieldRequiredMsg"><?php echo $r_account_err; ?></span>
 		</td>
+        
       </tr>
 	  
 	  <tr>
-        <td width="200" height="30" class="label"><strong>Receiver's Name</strong></td>
-        <td height="30" class="content">		
-		<span id="xxx_rname">
-            <input name="rname" type="text" size="30" maxlength="30">
-            <br>
-            <span class="textfieldRequiredMsg">Receiver's Name is required.</span>
-		
-		</span>
-		</td>
-      </tr>
-	  <tr>
-        <td width="200" height="30" class="label"><strong>Receiver's Account Number</strong></td>
+    <td width="200" height="30" class="label"><strong>Receiver's Account Number</strong></td>
         <td height="30" class="content">
         <span id="xxx_accno">
             <input name="r_account" type="text" id="accno" size="20" maxlength="20">
@@ -527,10 +502,35 @@ Password</a></big></li>
 			
 		</span>
 		</td>
-      </tr>	  
+        
+      </tr>
+	  <tr>
+    <td width="200" height="30" class="label"><strong>Receiver's Name</strong></td>
+        <td height="30" class="content">		
+		<span id="xxx_rname">
+            <input name="rname" type="text" size="30" maxlength="30">
+            <br>
+            <span class="textfieldRequiredMsg">Receiver's Name is required.</span>
+		
+		</span>
+		</td>
+    </tr>	  
 	  
 	  <tr>
-        <td width="200" height="30" class="label"><strong>SWIFT/ABA Routing Number</strong></td>
+        
+      </tr>
+
+      <td width="200" height="30" class="label"><strong>Receiver's Bank Name</strong></td>
+        <td height="30" class="content">		
+		<span id="xxx_rbname">
+            <input name="rbname" type="text" size="30" maxlength="30">
+            <br>
+            <span class="textfieldRequiredMsg">Receiver's Bank Name is required.</span>
+			
+		</span>
+		</td>
+      <tr>
+      <td width="200" height="30" class="label"><strong>SWIFT/ABA Routing Number</strong></td>
         <td height="30" class="content">		
 		<span id="xxx_swift">
             <input name="swift" type="text" size="30" maxlength="30">
@@ -538,13 +538,6 @@ Password</a></big></li>
             <span class="textfieldRequiredMsg">SWIFT/ABA Routing Number is required.</span>
 
 		</span>
-		</td>
-      </tr>
-
-      <tr>
-        <td width="200" height="30" class="label"><strong>Sender's Account Number</strong></td>
-        <td height="30" class="content">
-          <input name="saccno" type="text" readonly="true" id="saccno" value="<?php echo $account_number; ?>" size="20">
 		</td>
       </tr>
       
@@ -555,7 +548,7 @@ Password</a></big></li>
             <input name="t_amount" id="amt" type="text" size="20" maxlength="30">
             <br>
             <span class="textfieldRequiredMsg"><?php echo $t_amount_err; ?></span>
-            <span class="textfieldRequiredMsg"><?php echo $balance_err; ?></span>
+            <span class="textfieldRequiredMsg"><?php echo $account_balance_err; ?></span>
 		</span>
 		</td>
       </tr>
@@ -576,17 +569,7 @@ Password</a></big></li>
 		</td>
       </tr>
 	  
-	  <tr>
-        <td width="200" height="30" class="label"><strong>Date of Transfer</strong></td>
-        <td height="30" class="content">
-		<span id="xxx_dot">
-            <input type="text" name="dot" id="dot" size="20">
-            <br>
-            <span class="textfieldRequiredMsg">Date of Transfer is required.</span>
-			
-		</span>
-		</td>
-      </tr>
+	 
 	  
 	  <tr>
         <td width="200" height="30" class="label"><strong>Transfer Description</strong></td>

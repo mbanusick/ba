@@ -3,98 +3,156 @@
 // Include config file
 require_once "conn.php";
 
-// Check if the user is already logged in, if yes then redirect him to welcome page
- if(isset($_SESSION["account_number"]) && $_SESSION["account_number"] === !NULL){
-    header("location: summary.php");
+// Check if the user is logged in, if not then redirect him to login page
+if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+    header("location: login.php");
     exit;
-} 
- 
- 
-// Define variables and initialize with empty values
-$firstname = $lastname = $password = $email = "";
-$email_err = $password_err = $account_number_err = "";
- 
-$id = $_SESSION["id"];
-
-// Processing form data when form is submitted
-if($_SERVER["REQUEST_METHOD"] == "POST"){
- 
-    // Check if account_number is empty
-    if(empty(trim($_POST["account_pin"]))){
-        $account_pin_err = "Please enter your Account PIN";
-    } else{
-        $account_pin = trim($_POST["account_pin"]);
-    }
-    
-    // Check if password is empty
-    if(empty(trim($_POST["account_pin2"]))){
-        $account_pin2_err = "Please re-enter your PIN";
-    } else{
-        $account_pin2 = trim($_POST["account_pin2"]);
-    }
-    
-    // Validate credentials
-    if(empty($account_pin_err) && empty($account_pin2_err)){
-        // Prepare a select statement
-        $sql = "SELECT account_pin, account_number FROM users WHERE id = $id";   
-        
-        if($stmt = $pdo->prepare($sql)){
-            // Bind variables to the prepared statement as parameters
-            $stmt->bindParam(":account_pin", $param_account_pin, PDO::PARAM_INT);
-            
-			
-            // Set parameters
-            $param_account_pin = trim($_POST["account_pin"]);
-        
-			
-            // Attempt to execute the prepared statement
-            if($stmt->execute()){
-                // Check if account_number exists, if yes then verify password
-                if($stmt->rowCount() == 1){
-                    if($row = $stmt->fetch()){
-                       
-                        $account_pin1 = $row["account_pin"];
-                        /* $hashed_password = $row["password"];
-                        if(password_verify($password, $hashed_password)){
-                        // Password is correct, so start a new session */
-					            	//$password1 = $row["password"];
-                        if($account_pin1 == $account_pin){
-							
-                            
-                            // Store data in session variables
-                            $_SESSION["account_number"] = $account_number;  
-							
-                            // Redirect user to welcome page
-                            header("location: summary.php");
-
-                        } else {
-                            // Display an error message if PIN is not valid
-                            $account_pin2_err = "The PINs doesn't match, try again";
-                        }
-                    }
-                } else{
-                    // Display an error message if username doesn't exist
-                    $account_pin_err = "The PIN is Incorrect, try again";
-                }
-            } else{
-                echo "Oops! Something went wrong. Please try again later.";
-            }
-        }
-        
-        // Close statement
-        unset($stmt);
-    }
-    
-    // Close connection
-    unset($pdo);
 }
+
+// Define variables and initialize with empty values 
+$firstname = $lastname = $pin = $pin2 = $email = $phone = $dateofbirth = $gender = "";
+$address = $country = $state = $zip = $account_type = $account_pin = $account_pin2 = $picture = "";
+$r_account = $t_amount = $account_balance = "";
+$r_account_err = $t_amount_err = $account_balance_err = "";
+
+// Define error variables and initialize with empty values
+$firstname_err = $lastname_err = $pin_err = $pin2_err = $email_err = $phone_err = "";
+$dateofbirth_err = $gender_err = $address_err = $country_err = $state_err = $zip_err = "";
+$account_type_err = $account_pin_err = $account_pin2_err = $picture_err = "";
+
+//session data
+$id = $_SESSION["id"];
+$ip = $_SERVER['REMOTE_ADDR'];
+$account_number = $_SESSION["account_number"];
+
+ // prepare statement for getting user data from DB****************************1
+$sql = "SELECT * FROM users WHERE id = $id";   
+if($stmt = $pdo->prepare($sql)){
+    // Attempt to execute the prepared statement
+    if($stmt->execute()){
+        // Check if username exists, if yes then verify pin
+        if($stmt->rowCount() == 1){
+          if($row = $stmt->fetch()){
+            $firstname = $row["firstname"];
+            $lastname = $row["lastname"];
+            $email = $row["email"];
+            $phone = $row["phone"];
+            $address = $row["address"];
+            $state = $row["state"];
+            $country = $row["country"];
+            $zip = $row["zip"];
+            $account_pin = $row["account_pin"];
+
+        } 
+      }
+  }
+}
+
+//PIN change section
+
+if(isset($_POST["oldpin"]) && isset($_POST["pin"]) && isset($_POST["pin"])) {
+  // Check if pin is empty
+  if(empty(trim($_POST["oldpin"]))){
+      $pin_err = "Please enter your old pin.";
+  } else{
+      $pin = trim($_POST["oldpin"]);
+  }
+
+if(empty(trim($_POST["pin"]))) {
+  $pin_err = "Please enter your new pin.";
+} else {
+  // Check if both pins match
+  
+  if(trim($_POST["pin"]) !== trim($_POST["pin2"])) {
+    $pin2_err = "Both pins doesn't match";
+  } else {
+    $pin1 = trim($_POST["pin"]);
+  }
+}
+
+  
+  // Validate credentials
+  if(empty($pin_err)){
+      // Prepare a select statement
+      $sql = "SELECT pin FROM users WHERE id = :id";
+      
+      if($stmt = $pdo->prepare($sql)){
+          // Bind variables to the prepared statement as parameters
+         // $stmt->bindParam(":username", $param_username, PDO::PARAM_STR);
+          $stmt->bindParam(":id", $param_id, PDO::PARAM_INT);
+    
+          // Set parameters
+         // $param_username = trim($_POST["username"]);
+    $param_id = $_SESSION["id"];
+    
+          // Attempt to execute the prepared statement
+          if($stmt->execute()){
+              // Check if username exists, if yes then verify pin
+              if($stmt->rowCount() == 1){
+                  if($row = $stmt->fetch()){
+                      //$hashed_pin = $row["password"];
+          $passwordold = $row["password"];
+
+                      //if(password_verify($password, $hashed_password)){
+           if($oldpin = $passwordold){
+          
+          if(empty($password_err1) && empty($password_err2)){
+          
+            // Prepare a select statement
+            $sql = "UPDATE users SET password = :password WHERE id = :id";
+      
+            if($stmt = $pdo->prepare($sql)){
+              // Bind variables to the prepared statement as parameters
+              $stmt->bindParam(":password", $param_password1, PDO::PARAM_STR);
+              $stmt->bindParam(":id", $param_id, PDO::PARAM_INT);
+              
+              // Set parameters
+              //$param_password1 = password_hash($password1, PASSWORD_DEFAULT); 
+              $param_password1 = $password; 
+              
+              // Creates a password hash
+              $param_id = $_SESSION["id"];
+              
+              // Attempt to execute the prepared statement
+              if($stmt->execute()){
+                    
+                    
+                //$suc = "New password created.";
+                header("location: password.php?success=New password created");
+                
+                
+                } else{
+                  // Display an error message if password is not valid
+                  $password_err = "The password you entered was not valid.";
+                }
+              }
+            } else{
+              // Display an error message if username doesn't exist
+              $username_err = "No account found with that username.";
+            }
+          } else{
+              $oldpin_err = "Oops! Something went wrong. Please try again later.";
+          }
+      }
+      
+      // Close statement
+      unset($stmt);
+  }
+  
+  // Close connection
+  
+}
+}
+}
+}
+
 ?>
 
 <!DOCTYPE html>
 <html lang="en" class="nojs">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Change account Pin Number</title>
+<title>Change Account Pin Number</title>
 
 <link href="./css/admin.css" rel="stylesheet" type="text/css">
 <link href="./css/menu.css" rel="stylesheet" type="text/css">
@@ -144,8 +202,8 @@ Statement</a></big></li>
  style="font-weight: bold;">Security Settings</span></big></div>
 <ul style="color: rgb(51, 51, 255);">
   <big></big><li style="font-weight: bold;"><big><a
- href="password.php">Change
-Password</a></big></li>
+ href="pin.php">Change
+pin</a></big></li>
   <big></big><li style="font-weight: bold;"><big><a
  href="pin.php">Change PIN</a></big></li>
   <big></big><li style="font-weight: bold;"><big><a
@@ -163,13 +221,13 @@ Password</a></big></li>
           <tr>
             <td>
 <h2>Change Account Pin</h2>
-<p>If you feel that you have a weaker strengh password, then please change it. We recommend to change your password in every 45 days to make it secure.</p>
+<p>If you feel that you have a weaker strength PIN, then please change it. We recommend to change your PIN from time to time.</p>
 
 <strong>Account Pin Change guidelines</strong>
-<p>sadas dasdsa asda s</p>
 
-<link href="./library/spry/passwordvalidation/SpryValidationPassword.css" rel="stylesheet" type="text/css" />
-<script src="./library/spry/passwordvalidation/SpryValidationPassword.js" type="text/javascript"></script>
+
+<link href="./library/spry/pinvalidation/SpryValidationpin.css" rel="stylesheet" type="text/css" />
+<script src="./library/spry/pinvalidation/SpryValidationpin.js" type="text/javascript"></script>
 
 <link href="./library/spry/textfieldvalidation/SpryValidationTextField.css" rel="stylesheet" type="text/css" />
 <script src="./library/spry/textfieldvalidation/SpryValidationTextField.js" type="text/javascript"></script>
@@ -177,22 +235,22 @@ Password</a></big></li>
 <link href="./library/spry/confirmvalidation/SpryValidationConfirm.css" rel="stylesheet" type="text/css" />
 <script src="./library/spry/confirmvalidation/SpryValidationConfirm.js" type="text/javascript"></script>
 
-<form action="./view/process.php?action=changepin" method="post">
+<form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
     <table width="500" border="0" cellpadding="5" cellspacing="1" class="entryTable">
       <tr id="listTableHeader">
         <th colspan="2">Change PIN Number;</th>
       </tr>
       <tr>
-        <td width="160" height="30" class="label"><strong>User Name</strong></td>
+        <td width="160" height="30" class="label"><strong>Full Name</strong></td>
         <td height="30" class="content">		
-			<input type="text" class="frmInputs" size="40" value="ERIC EDISON JACOB" disabled="disabled" />
+			<input type="text" class="frmInputs" size="40" value="<?php echo $firstname; ?> <?php echo $lastname; ?>" disabled="disabled" />
 			<input type="hidden" name="id" value="12" />
 		</td>
       </tr>
       <tr>
         <td width="160" height="30" class="label"><strong>Account Number</strong></td>
         <td height="30" class="content">
-          <input type="text" class="frmInputs" size="40" value="6705249732" disabled="disabled"/></td>
+          <input type="text" class="frmInputs" size="40" value="<?php echo $account_number; ?>" disabled="disabled"/></td>
       </tr>
       <tr>
         <td width="160" height="30" class="label"><strong>New Account Pin</strong></td>
@@ -200,10 +258,9 @@ Password</a></big></li>
 		<span id="sprytf_pin">
             <input name="pin" type="text" class="frmInputs" id="accno"  size="20" maxlength="30" />
             <br/>
-            <span class="textfieldRequiredMsg">Account Pin is required.</span>
-			<span class="textfieldMinCharsMsg">Account Pin must specify at least 4 characters.</span>
-			<span class="textfieldMaxCharsMsg">Account Pin must specify at max 6 characters.</span>
-			<span class="textfieldInvalidFormatMsg">Account Pin must be Integer.</span>
+            <span class="textfieldRequiredMsg"><?php echo $account_pin_err; ?></span>
+	
+
 		</span>
 		</td>
       </tr>
@@ -214,9 +271,8 @@ Password</a></big></li>
 		<span id="sprytf_cpin">
             <input name="pin2" type="text" class="frmInputs" id="accno" size="20" maxlength="30" />
             <br/>
-           	<span class="confirmRequiredMsg">Confirm Password is required.</span>
-			<span class="textfieldRequiredMsg">Account Pin is required.</span>
-			<span class="confirmInvalidMsg">Confirm Password values don't match</span>
+           	<span class="confirmRequiredMsg"><?php echo $account_pin2_err; ?></span>
+
 		</span>
 		</td>
       </tr>
@@ -231,7 +287,7 @@ Password</a></big></li>
 <script type="text/javascript">
 <!--
 var spry_pin = new Spry.Widget.ValidationTextField("sprytf_pin", 'integer', {minChars:4, maxChars: 6, validateOn:["blur", "change"]});
-//Confirm Password
+//Confirm pin
 var spry_cpin = new Spry.Widget.ValidationConfirm("sprytf_cpin", "sprytf_pin", {minChars:4, maxChars: 6, validateOn:["blur", "change"]});
 //-->
 </script></td>
