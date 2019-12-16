@@ -50,12 +50,12 @@ if($stmt = $pdo->prepare($sql)){
 
 //PIN change section
 
-if(isset($_POST["oldpin"]) && isset($_POST["pin"]) && isset($_POST["pin"])) {
+if(isset($_POST["oldpin"]) && isset($_POST["pin"]) && isset($_POST["pin2"])) {
   // Check if pin is empty
   if(empty(trim($_POST["oldpin"]))){
       $pin_err = "Please enter your old pin.";
   } else{
-      $pin = trim($_POST["oldpin"]);
+      $oldpin = trim($_POST["oldpin"]);
   }
 
 if(empty(trim($_POST["pin"]))) {
@@ -66,7 +66,7 @@ if(empty(trim($_POST["pin"]))) {
   if(trim($_POST["pin"]) !== trim($_POST["pin2"])) {
     $pin2_err = "Both pins doesn't match";
   } else {
-    $pin1 = trim($_POST["pin"]);
+    $pin = trim($_POST["pin"]);
   }
 }
 
@@ -74,61 +74,48 @@ if(empty(trim($_POST["pin"]))) {
   // Validate credentials
   if(empty($pin_err)){
       // Prepare a select statement
-      $sql = "SELECT pin FROM users WHERE id = :id";
+      $sql = "SELECT account_pin FROM users WHERE id = $id";
       
       if($stmt = $pdo->prepare($sql)){
-          // Bind variables to the prepared statement as parameters
-         // $stmt->bindParam(":username", $param_username, PDO::PARAM_STR);
-          $stmt->bindParam(":id", $param_id, PDO::PARAM_INT);
-    
-          // Set parameters
-         // $param_username = trim($_POST["username"]);
-    $param_id = $_SESSION["id"];
-    
+      
           // Attempt to execute the prepared statement
           if($stmt->execute()){
               // Check if username exists, if yes then verify pin
               if($stmt->rowCount() == 1){
                   if($row = $stmt->fetch()){
-                      //$hashed_pin = $row["password"];
-          $passwordold = $row["password"];
+                      //$hashed_pin = $row["pin"];
+          $pinold = $row["account_pin"];
 
-                      //if(password_verify($password, $hashed_password)){
-           if($oldpin = $passwordold){
+                      //if(pin_verify($pin, $hashed_pin)){
+           if($oldpin = $pinold){
           
-          if(empty($password_err1) && empty($password_err2)){
+          if(empty($pin_err) && empty($pin2_err)){
           
             // Prepare a select statement
-            $sql = "UPDATE users SET password = :password WHERE id = :id";
+            $sql = "UPDATE users SET account_pin = :pin WHERE id = $id";
       
             if($stmt = $pdo->prepare($sql)){
               // Bind variables to the prepared statement as parameters
-              $stmt->bindParam(":password", $param_password1, PDO::PARAM_STR);
-              $stmt->bindParam(":id", $param_id, PDO::PARAM_INT);
+              $stmt->bindParam(":pin", $param_pin, PDO::PARAM_INT);
               
               // Set parameters
-              //$param_password1 = password_hash($password1, PASSWORD_DEFAULT); 
-              $param_password1 = $password; 
+              $param_pin = $pin; 
               
-              // Creates a password hash
-              $param_id = $_SESSION["id"];
               
               // Attempt to execute the prepared statement
               if($stmt->execute()){
                     
                     
-                //$suc = "New password created.";
-                header("location: password.php?success=New password created");
+                //$suc = "New pin created.";
+                header("location: pin.php?success=New pin created");
                 
                 
                 } else{
-                  // Display an error message if password is not valid
-                  $password_err = "The password you entered was not valid.";
+                  // Display an error message if pin is not valid
+                  $pin_err = "The pin you entered was not valid.";
                 }
               }
-            } else{
-              // Display an error message if username doesn't exist
-              $username_err = "No account found with that username.";
+            } 
             }
           } else{
               $oldpin_err = "Oops! Something went wrong. Please try again later.";
@@ -253,15 +240,23 @@ pin</a></big></li>
           <input type="text" class="frmInputs" size="40" value="<?php echo $account_number; ?>" disabled="disabled"/></td>
       </tr>
       <tr>
+        <td width="160" height="30" class="label"><strong>Old Account Pin</strong></td>
+        <td height="30" class="content">
+		    <span id="sprytf_pin">
+            <input name="oldpin" type="text" class="frmInputs" id="accno"  size="20" maxlength="30" />
+            <br/>
+            <span class="textfieldRequiredMsg"><?php echo $account_pin_err; ?></span>
+			</span>
+		</td>
+      </tr>
+      <tr>
         <td width="160" height="30" class="label"><strong>New Account Pin</strong></td>
         <td height="30" class="content">
-		<span id="sprytf_pin">
+		    <span id="sprytf_pin">
             <input name="pin" type="text" class="frmInputs" id="accno"  size="20" maxlength="30" />
             <br/>
             <span class="textfieldRequiredMsg"><?php echo $account_pin_err; ?></span>
-	
-
-		</span>
+			</span>
 		</td>
       </tr>
 	  

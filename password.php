@@ -55,7 +55,7 @@ if(isset($_POST["oldpassword"]) && isset($_POST["password"]) && isset($_POST["pa
   if(empty(trim($_POST["oldpassword"]))){
       $password_err = "Please enter your old password.";
   } else{
-      $password = trim($_POST["oldpassword"]);
+      $oldpassword = trim($_POST["oldpassword"]);
   }
 
 if(empty(trim($_POST["password"]))) {
@@ -66,7 +66,7 @@ if(empty(trim($_POST["password"]))) {
   if(trim($_POST["password"]) !== trim($_POST["password2"])) {
     $password2_err = "Both passwords doesn't match";
   } else {
-    $password1 = trim($_POST["password"]);
+    $password = trim($_POST["password"]);
   }
 }
 
@@ -74,16 +74,9 @@ if(empty(trim($_POST["password"]))) {
   // Validate credentials
   if(empty($password_err)){
       // Prepare a select statement
-      $sql = "SELECT password FROM users WHERE id = :id";
+      $sql = "SELECT password FROM users WHERE id = $id";
       
       if($stmt = $pdo->prepare($sql)){
-          // Bind variables to the prepared statement as parameters
-         // $stmt->bindParam(":username", $param_username, PDO::PARAM_STR);
-          $stmt->bindParam(":id", $param_id, PDO::PARAM_INT);
-    
-          // Set parameters
-         // $param_username = trim($_POST["username"]);
-    $param_id = $_SESSION["id"];
     
           // Attempt to execute the prepared statement
           if($stmt->execute()){
@@ -96,31 +89,24 @@ if(empty(trim($_POST["password"]))) {
                       //if(password_verify($password, $hashed_password)){
            if($oldpassword = $passwordold){
           
-          if(empty($password_err1) && empty($password_err2)){
+          if(empty($password_err) && empty($password2_err)){
           
             // Prepare a select statement
-            $sql = "UPDATE users SET password = :password WHERE id = :id";
+            $sql = "UPDATE users SET password = :password WHERE id = $id";
       
             if($stmt = $pdo->prepare($sql)){
               // Bind variables to the prepared statement as parameters
-              $stmt->bindParam(":password", $param_password1, PDO::PARAM_STR);
-              $stmt->bindParam(":id", $param_id, PDO::PARAM_INT);
-              
+              $stmt->bindParam(":password", $param_password, PDO::PARAM_STR);
+                            
               // Set parameters
-              //$param_password1 = password_hash($password1, PASSWORD_DEFAULT); 
-              $param_password1 = $password; 
-              
-              // Creates a password hash
-              $param_id = $_SESSION["id"];
-              
+              $param_password = $password; 
+                         
               // Attempt to execute the prepared statement
-              if($stmt->execute()){
-                    
+              if($stmt->execute()){          
                     
                 //$suc = "New password created.";
                 header("location: password.php?success=New password created");
-                
-                
+                        
                 } else{
                   // Display an error message if password is not valid
                   $password_err = "The password you entered was not valid.";
