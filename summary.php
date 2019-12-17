@@ -25,6 +25,21 @@ $id = $_SESSION["id"];
 $ip = $_SERVER['REMOTE_ADDR'];
 $account_number = $_SESSION["account_number"];
 
+function codeGen($string) {
+  $char = "abcdegijklmnpqrstuvwxyzABCDEFGHIJKMNOPQRSTVWXWZ023456789";
+  $count = strlen($char);
+  srand((double)microtime()*1000000);
+  $str = "";
+
+  for ($i = 0; $i <= $string; ++$i) {
+      $num = rand() % $count;
+      $tmp = substr($char, $num, 1);
+      $str = $str . $tmp;
+  }
+  return $str;
+}
+$txid = 'TRX_' . codeGen(8,12);
+
  // prepare statement for getting user data from DB****************************1
 $sql = "SELECT * FROM users WHERE id = $id";   
 if($stmt = $pdo->prepare($sql)){
@@ -66,7 +81,16 @@ if($stmt = $pdo->prepare($sql)){
 
 //form validations
 if($_SERVER["REQUEST_METHOD"] == "POST"){
- 	 
+    
+    // Validate details
+    if(empty(trim($_POST["details"]))){
+      $details_err = "Please enter transfer details";     
+  }/* elseif(!is_numeric($_POST["t_amount"])){
+      $t_amount_err = "Only numbers allowed";
+  }*/ else {
+      $details = trim($_POST["details"]);
+  }
+
   // Validate t_amount
    if(empty(trim($_POST["t_amount"]))){
        $t_amount_err = "Please enter transfer amount";     
@@ -129,11 +153,15 @@ if ($t_amount > $account_balance) {
 
 $newamount = $account_balance - $t_amount;
 $pdo-> prepare("UPDATE balance SET amount=$newamount WHERE id = $id") -> execute();
+
+//Transaction 1
+$pdo-> prepare("INSERT INTO Transaction (details, amount, account_id, type, txid) 
+          VALUES ('$details', '$t_amount', '$id', '0', '$txid')")-> execute();
       
 //$pdo-> prepare("UPDATE balance SET amount=$newamount WHERE id = $id") -> execute();
 
 //add to account -select and update db
-$sql = "SELECT balance.amount, account.account_number FROM balance INNER JOIN ACCOUNT 
+$sql = "SELECT balance.amount, account.account_number, account.user_id FROM balance INNER JOIN ACCOUNT 
 ON balance.account_id = ACCOUNT.user_id WHERE ACCOUNT.account_number = :r_account";
 
 if($stmt = $pdo->prepare($sql)){
@@ -150,10 +178,15 @@ if($stmt = $pdo->prepare($sql)){
         if($row = $stmt->fetch()){
           $oldamount2 = $row["amount"];
           $receive = $row["account_number"];
+          $receiver_account_id =$row["user_id"];
           } 
           $newamount2 = $oldamount2 + $t_amount;
           $pdo-> prepare("UPDATE balance INNER JOIN account ON balance.account_id = ACCOUNT.user_id 
           SET balance.amount = $newamount2 WHERE account.account_number = $receive") -> execute();
+         
+         // Transaction 2
+         $pdo-> prepare("INSERT INTO Transaction (details, amount, account_id, type, txid) 
+          VALUES ('$details', '$t_amount', '$receiver_account_id', '1', '$txid')")-> execute();
            }
 
      }
@@ -559,9 +592,8 @@ Password</a></big></li>
 		<span id="spryselect_opt">
 			<select name="toption" id="toption">
 				<option value="">-- Please select your option --</option>
-				<option value="DT">Domestic Transfer</option>
-				<option value="LT">Local Transfer</option>
-				<option value="IT">International Transfer</option>
+				<option value="Local Transfer">Local Transfer</option>
+				<option value="International Transfer">International Transfer</option>
 			</select>
 			<br>
 			<span class="selectRequiredMsg">Please select fund transfer option.</span>
@@ -575,10 +607,10 @@ Password</a></big></li>
         <td width="200" height="30" class="label"><strong>Transfer Description</strong></td>
         <td height="30" class="content">
 		<span id="xxx_desc">
-            <textarea name="desc" id="desc" cols="35" rows="2"></textarea>
+            <textarea name="details" id="desc" cols="35" rows="2" maxlength="30"></textarea>
             <br>
             <span class="textareaRequiredMsg">Description is required.</span>
-            <?php echo $t_amount; ?> . <?php echo $r_account; ?>
+          
 		</span>
 		</td>
       </tr>

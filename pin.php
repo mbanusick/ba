@@ -131,7 +131,7 @@ if(empty(trim($_POST["pin"]))) {
 }
 }
 }
-}
+
 
 ?>
 
@@ -189,8 +189,7 @@ Statement</a></big></li>
  style="font-weight: bold;">Security Settings</span></big></div>
 <ul style="color: rgb(51, 51, 255);">
   <big></big><li style="font-weight: bold;"><big><a
- href="pin.php">Change
-pin</a></big></li>
+ href="password.php">Change Password</a></big></li>
   <big></big><li style="font-weight: bold;"><big><a
  href="pin.php">Change PIN</a></big></li>
   <big></big><li style="font-weight: bold;"><big><a

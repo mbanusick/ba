@@ -20,13 +20,13 @@ try {
     lastname VARCHAR(50) NOT NULL,
 	password VARCHAR(255) NOT NULL,
 	email VARCHAR(50) NOT NULL UNIQUE,
-    phone CHAR NOT NULL,
+    phone VARCHAR(13) NOT NULL,
 	dateofbirth DATE,
 	gender VARCHAR(10) NOT NULL,
 	address VARCHAR(50) NOT NULL,
 	country VARCHAR(25) NOT NULL,
 	state VARCHAR(50) NOT NULL,
-	zip CHAR NOT NULL,
+	zip VARCHAR(10) NOT NULL,
 	account_type VARCHAR(15) NOT NULL,
 	account_pin INT NOT NULL,
 	date_created DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -35,7 +35,7 @@ try {
     $conn->exec("CREATE TABLE Account (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, 
     user_id VARCHAR(30) NOT NULL,
-    account_number INT NOT NULL UNIQUE,
+    account_number BIGINT NOT NULL UNIQUE,
     date_created DATETIME DEFAULT CURRENT_TIMESTAMP
     -- FOREIGN KEY (user_id) REFERENCES Users(id)
     )");
