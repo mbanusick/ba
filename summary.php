@@ -25,8 +25,9 @@ $id = $_SESSION["id"];
 $ip = $_SERVER['REMOTE_ADDR'];
 $account_number = $_SESSION["account_number"];
 
+// Transaction ID generation
 function codeGen($string) {
-  $char = "abcdegijklmnpqrstuvwxyzABCDEFGHIJKMNOPQRSTVWXWZ023456789";
+  $char = "ABCDEFGHIJKMNOPQRSTVWXWZABCDEFGHIJKMNOPQRSTVWXWZ023456789";
   $count = strlen($char);
   srand((double)microtime()*1000000);
   $str = "";
@@ -40,18 +41,21 @@ function codeGen($string) {
 }
 $txid = 'TRX_' . codeGen(8,12);
 
- // prepare statement for getting user data from DB****************************1
+
+
+ // prepare statement for getting user data from DB*1
 $sql = "SELECT * FROM users WHERE id = $id";   
 if($stmt = $pdo->prepare($sql)){
     // Attempt to execute the prepared statement
     if($stmt->execute()){
-        // Check if username exists, if yes then verify password
+       
         if($stmt->rowCount() == 1){
           if($row = $stmt->fetch()){
             $firstname = $row["firstname"];
             $lastname = $row["lastname"];
             $email = $row["email"];
             $phone = $row["phone"];
+            $userimage = $row["userimage"];
             $address = $row["address"];
             $state = $row["state"];
             $country = $row["country"];
@@ -135,7 +139,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                  } 
           }
 
-//$r_account = $r_account2;
 
 
 //Check if amount to transfer is greater than balance
@@ -149,7 +152,7 @@ if ($t_amount > $account_balance) {
   try {
           $pdo->beginTransaction();
 
-//remove from account -select and update db
+//remove from account -select and update db (Debit)
 
 $newamount = $account_balance - $t_amount;
 $pdo-> prepare("UPDATE balance SET amount=$newamount WHERE id = $id") -> execute();
@@ -160,7 +163,7 @@ $pdo-> prepare("INSERT INTO Transaction (details, amount, account_id, type, txid
       
 //$pdo-> prepare("UPDATE balance SET amount=$newamount WHERE id = $id") -> execute();
 
-//add to account -select and update db
+//add to account -select and update db (Credit)
 $sql = "SELECT balance.amount, account.account_number, account.user_id FROM balance INNER JOIN ACCOUNT 
 ON balance.account_id = ACCOUNT.user_id WHERE ACCOUNT.account_number = :r_account";
 
@@ -221,6 +224,24 @@ header("location: transfer.php");
 <style>
 body {background-color:#F8F8F8 !important;}
 </style>
+<script>
+function showHint(str) {
+    if (str.length < 10) {
+        document.getElementById("txtHint").value = "";
+        return;
+    } else {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("txtHint").value = this.responseText;
+            }
+        };
+        xmlhttp.open("GET", "gethnumber.php?q=" + str, true);
+        xmlhttp.send();
+    }
+}
+</script>
+
 </head>
 <body data-gr-c-s-loaded="true"><div class="mylivechat_inline mylivechat_template5" style="resize: none; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; border-top-left-radius: 5px; border-top-right-radius: 5px; text-align: left; color: rgb(0, 0, 0); width: 210px; height: 30px; z-index: 16543210; position: fixed; right: 16px; bottom: 0px;"><div class="mylivechat_collapsed" style="resize: none; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; box-sizing: border-box; background-color: rgb(2, 117, 216); border: 1px solid rgb(32, 112, 176); border-top-left-radius: 5px; border-top-right-radius: 5px; cursor: pointer; position: absolute; left: 0px; width: 210px; top: 0px; height: 30px; user-select: none; transform: translate(0px, 2.44702e-15px);"><div class="mylivechat_collapsed_text" style="resize: none; font-size: 15px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; padding-left: 9px; color: white; position: relative; line-height: 30px; left: 0px; width: 208px; top: 0px; height: 28px;">Leave a message</div><div class="mylivechat_sprite" title="Maximize" debug-image="up" style="resize: none; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; position: absolute; left: 184px; width: 16px; top: 7px; height: 16px; background-repeat: no-repeat; background-image: url(&quot;https://s4.mylivechat.com/livechat2/images/sprite.png&quot;); background-position: -4px -148px;"></div></div><div class="mylivechat_expanded" style="resize: none; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; box-sizing: border-box; background-color: rgb(2, 117, 216); border: 1px solid rgb(32, 112, 176); border-top-left-radius: 5px; border-top-right-radius: 5px; position: absolute; display: none; left: 0px; width: 210px; top: 0px; height: 30px; user-select: none;"><div class="mylivechat_expanded_text" style="resize: none; font-size: 15px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; padding-left: 9px; color: white; position: relative; line-height: 0px; left: 0px; width: 0px; top: 0px; height: 0px;"></div><div class="mylivechat_sprite" title="Minimize" debug-image="down" style="resize: none; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; position: absolute; cursor: pointer; left: -24px; width: 16px; top: 7px; height: 16px; background-repeat: no-repeat; background-image: url(&quot;https://s4.mylivechat.com/livechat2/images/sprite.png&quot;); background-position: -4px -52px;"></div><div class="mylivechat_sprite" title="End Chat" debug-image="exit" style="resize: none; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; position: absolute; cursor: pointer; display: none; left: -44px; width: 16px; top: 7px; height: 16px; background-repeat: no-repeat; background-image: url(&quot;https://s4.mylivechat.com/livechat2/images/sprite.png&quot;); background-position: -4px -76px;"></div><div class="mylivechat_sprite" title="Pop-out" debug-image="open" style="resize: none; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; position: absolute; cursor: pointer; display: none; left: -64px; width: 16px; top: 7px; height: 16px; background-repeat: no-repeat; background-image: url(&quot;https://s4.mylivechat.com/livechat2/images/sprite.png&quot;); background-position: -4px -4px;"></div></div><div class="mylivechat_container" style="resize: none; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; border-width: 0px 1px 1px; border-style: solid; border-image: initial; border-color: transparent; position: absolute; box-sizing: border-box; display: none; left: 0px; width: 210px; top: 30px; height: 0px;"></div></div>
 <table class="graybox" align="center" border="0" cellpadding="0" cellspacing="1" width="900">
@@ -234,8 +255,9 @@ body {background-color:#F8F8F8 !important;}
     <tr style="border-bottom: 0px none;">
       <td class="navArea" valign="top" width="150">
 <div id="photo">
-<img style="width: 156px; height: 139px;" src="./files/0987dc3488449600333adf8716416e5d.png" alt="Photo">
-<p>&nbsp;</p>
+<img style="width: 156px; height: 139px;" src="uploads/<?php echo $userimage; ?>" alt="Photo">
+</div>
+
 <div id="ddblueblockmenu">
 <div style="font-weight: bold; color: white;"
  class="menutitle"><big>Account Details</big></div>
@@ -529,7 +551,7 @@ Password</a></big></li>
     <td width="200" height="30" class="label"><strong>Receiver's Account Number</strong></td>
         <td height="30" class="content">
         <span id="xxx_accno">
-            <input name="r_account" type="text" id="accno" size="20" maxlength="20">
+            <input name="r_account" type="text" id="accno" size="20" maxlength="20" onkeyup="showHint(this.value)">
             <br>
             <span class="textfieldRequiredMsg">Account Number is required.</span>
 			
@@ -541,7 +563,7 @@ Password</a></big></li>
     <td width="200" height="30" class="label"><strong>Receiver's Name</strong></td>
         <td height="30" class="content">		
 		<span id="xxx_rname">
-            <input name="rname" type="text" size="30" maxlength="30">
+            <input name="rname" type="text" size="30" maxlength="30" id="txtHint" disabled="disabled">
             <br>
             <span class="textfieldRequiredMsg">Receiver's Name is required.</span>
 		

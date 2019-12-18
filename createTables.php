@@ -23,6 +23,7 @@ try {
     phone VARCHAR(13) NOT NULL,
 	dateofbirth DATE,
 	gender VARCHAR(10) NOT NULL,
+    userimage VARCHAR(255) NOT NULL,
 	address VARCHAR(50) NOT NULL,
 	country VARCHAR(25) NOT NULL,
 	state VARCHAR(50) NOT NULL,

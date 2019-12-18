@@ -29,17 +29,17 @@ if($stmt = $pdo->prepare($sql)){
     // Attempt to execute the prepared statement
     if($stmt->execute()){
         // Check if username exists, if yes then verify password
-        if($stmt->rowCount() == 1){
-          if($row = $stmt->fetch()){
-            $firstname = $row["firstname"];
-            $lastname = $row["lastname"];
-            $email = $row["email"];
-            $phone = $row["phone"];
-            $address = $row["address"];
-            $state = $row["state"];
-            $country = $row["country"];
-            $zip = $row["zip"];
-            $account_pin = $row["account_pin"];
+        if($row = $stmt->fetch()){
+          $firstname = $row["firstname"];
+          $lastname = $row["lastname"];
+          $email = $row["email"];
+          $phone = $row["phone"];
+          $userimage = $row["userimage"];
+          $address = $row["address"];
+          $state = $row["state"];
+          $country = $row["country"];
+          $zip = $row["zip"];
+          $account_pin = $row["account_pin"];
 
         } 
       }
@@ -94,8 +94,8 @@ body {background-color:#F8F8F8 !important;}
     <tr style="border-bottom: 0px none;">
       <td class="navArea" valign="top" width="150">
 <div id="photo">
-<img style="width: 156px; height: 139px;" src="./files/0987dc3488449600333adf8716416e5d.png" alt="Photo">
-<p>&nbsp;</p>
+<img style="width: 156px; height: 139px;" src="uploads/<?php echo $userimage; ?>" alt="Photo">
+</div>
 <div id="ddblueblockmenu">
 <div style="font-weight: bold; color: white;"
  class="menutitle"><big>Account Details</big></div>

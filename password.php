@@ -163,7 +163,7 @@ body {background-color:#F8F8F8 !important;}
     <tr style="border-bottom: 0px none;">
       <td class="navArea" valign="top" width="150">
 <div id="photo">
-<img style="width: 156px; height: 139px;" src="./files/0987dc3488449600333adf8716416e5d.png" alt="Photo">
+<img style="width: 156px; height: 139px;" src="uploads/<?php echo $userimage; ?>" alt="Photo">
 <p>&nbsp;</p>
 <div id="ddblueblockmenu">
 <div style="font-weight: bold; color: white;"

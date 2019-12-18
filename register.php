@@ -4,12 +4,12 @@ require_once "conn.php";
 
 // Define variables and initialize with empty values 
 $firstname = $lastname = $password1 = $password2 = $email = $phone = $dateofbirth = $gender = "";
-$address = $country = $state = $zip = $account_type = $account_pin = $account_pin2 = $picture = "";
+$address = $country = $state = $zip = $account_type = $account_pin = $account_pin2 = $userimage = "";
 
 // Define error variables and initialize with empty values
 $firstname_err = $lastname_err = $password1_err = $password2_err = $email_err = $phone_err = "";
 $dateofbirth_err = $gender_err = $address_err = $country_err = $state_err = $zip_err = "";
-$account_type_err = $account_pin_err = $account_pin2_err = $picture_err = "";
+$account_type_err = $account_pin_err = $account_pin2_err = $userimage_err = "";
 
 // Processing form data when form is submitted
 if($_SERVER["REQUEST_METHOD"] == "POST"){
@@ -152,16 +152,63 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         }
     }
 	
-	
-  // Check input errors before inserting in database
+ //include "upload.php";
+$target_dir = "uploads/";
+$target_file = $target_dir . basename($_FILES["userimage"]["name"]);
+$uploadOk = 1;
+$imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+// Check if image file is a actual image or fake image
+if(isset($_POST["submit"])) {
+    $check = getimagesize($_FILES["userimage"]["tmp_name"]);
+    if($check !== false) {
+        $userimage_err =  "File is an image - " . $check["mime"] . ".";
+        $uploadOk = 1;
+    } else {
+        $userimage_err =  "File is not an image.";
+        $uploadOk = 0;
+    }
+}
+// Check if file already exists
+if (file_exists($target_file)) {
+    $userimage_err =  "Sorry, file already exists.";
+    $uploadOk = 0;
+}
+// Check file size
+if ($_FILES["userimage"]["size"] > 500000) {
+    $userimage_err =  "Sorry, your file is too large.";
+    $uploadOk = 0;
+}
+// Allow certain file formats
+if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
+&& $imageFileType != "gif" ) {
+    $userimage_err = "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+    $uploadOk = 0;
+}
+// Check if $uploadOk is set to 0 by an error
+if ($uploadOk == 0) {
+    $userimage_err =  "Sorry, your file was not uploaded.";
+// if everything is ok, try to upload file
+} else {
+    if (move_uploaded_file($_FILES["userimage"]["tmp_name"], $target_file)) {
+        echo "The file ". basename( $_FILES["userimage"]["name"]). " has been uploaded.";
+        $target_file2 = basename( $_FILES["userimage"]["name"]);
+    } else {
+        $userimage_err = "Sorry, there was an error uploading your file.";
+    }
+}
+
+
+
+
+ // Check input errors before inserting in database
    if(empty($firstname_err) && empty($lastname_err) && empty($password1_err) && empty($password2_err) && empty($email_err) && empty($phone_err) 
    && empty($dateofbirth_err) && empty($gender_err) && empty($address_err) && empty($country_err) && empty($state_err) && empty($zip_err) 
-   && empty($account_type_err) && empty($account_pin_err) && empty($account_pin2_err)) {
+   && empty($account_type_err) && empty($account_pin_err) && empty($account_pin2_err) && !empty($target_file2)) {
         try {
             $pdo->beginTransaction();
              // Prepare an insert statement
-            $sql = "INSERT INTO users (firstname, lastname, password, email, phone, dateofbirth, gender, address, country, state, zip, account_type, account_pin) 
-			VALUES (:firstname, :lastname, :password, :email, :phone, :dateofbirth, :gender, :address, :country, :state, :zip, :account_type, :account_pin)";
+            $sql = "INSERT INTO users (firstname, lastname, password, email, phone, dateofbirth, gender, userimage, address, country, state, zip, account_type, account_pin) 
+			VALUES (:firstname, :lastname, :password, :email, :phone, :dateofbirth, :gender, '$target_file2', :address, :country, :state, :zip, :account_type, :account_pin)";
             
             if($stmt = $pdo->prepare($sql)){
                 // Bind variables to the prepared statement as parameters
@@ -269,7 +316,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
   <table width="100%" border="0" cellspacing="0" cellpadding="20">
     <tr> 
      <td class="contentArea">
-        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">    
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" enctype="multipart/form-data">    
       	<h2 align="center"><strong>Register Account: </strong></h2>
       	<p align="center">Please register your account with us to take the advantage of our Online Banking facilities.</p>
 	  	<div class="errorMessage" align="center">&nbsp;</div>
@@ -358,12 +405,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 		  </tr>
 		  
 		  <tr>
-            <td width="120" height="30" class="label"><label for="accno"><strong>Profile Pics</strong></label></td>
+            <td width="120" height="30" class="label"><label for="accno"><strong>Profile Image</strong></label></td>
             <td height="30" class="content">
 			<span id="sprytf_lastname">
-            <input name="pic" type="file" class="frmInputs"  size="30" maxlength="30" />
+            <input name="userimage" type="file" class="frmInputs"  />
             <br/>
-            <span class="textfieldRequiredMsg"><?php echo $picture_err; ?></span>			
+            <span class="textfieldRequiredMsg"><?php echo $userimage_err; ?></span>			
 			</span>
 			</td>
 		  </tr>

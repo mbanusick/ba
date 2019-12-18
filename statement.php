@@ -1,3 +1,213 @@
+<?php
+
+// Include config file
+require_once "conn.php";
+
+// Check if the user is logged in, if not then redirect him to login page
+if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+    header("location: login.php");
+    exit;
+}
+
+// Define variables and initialize with empty values 
+$firstname = $lastname = $password1 = $password2 = $email = $phone = $dateofbirth = $gender = "";
+$address = $country = $state = $zip = $account_type = $account_pin = $account_pin2 = $picture = "";
+$r_account = $t_amount = $account_balance = "";
+$r_account_err = $t_amount_err = $account_balance_err = "";
+
+// Define error variables and initialize with empty values
+$firstname_err = $lastname_err = $password1_err = $password2_err = $email_err = $phone_err = "";
+$dateofbirth_err = $gender_err = $address_err = $country_err = $state_err = $zip_err = "";
+$account_type_err = $account_pin_err = $account_pin2_err = $picture_err = "";
+
+//session data
+$id = $_SESSION["id"];
+$ip = $_SERVER['REMOTE_ADDR'];
+$account_number = $_SESSION["account_number"];
+
+// Transaction ID generation
+function codeGen($string) {
+  $char = "ABCDEFGHIJKMNOPQRSTVWXWZABCDEFGHIJKMNOPQRSTVWXWZ023456789";
+  $count = strlen($char);
+  srand((double)microtime()*1000000);
+  $str = "";
+
+  for ($i = 0; $i <= $string; ++$i) {
+      $num = rand() % $count;
+      $tmp = substr($char, $num, 1);
+      $str = $str . $tmp;
+  }
+  return $str;
+}
+$txid = 'TRX_' . codeGen(8,12);
+
+
+
+ // prepare statement for getting user data from DB*1
+$sql = "SELECT * FROM users WHERE id = $id";   
+if($stmt = $pdo->prepare($sql)){
+    // Attempt to execute the prepared statement
+    if($stmt->execute()){
+       
+        if($stmt->rowCount() == 1){
+          if($row = $stmt->fetch()){
+            $firstname = $row["firstname"];
+            $lastname = $row["lastname"];
+            $email = $row["email"];
+            $phone = $row["phone"];
+            $userimage = $row["userimage"];
+            $address = $row["address"];
+            $state = $row["state"];
+            $country = $row["country"];
+            $zip = $row["zip"];
+            $account_pin = $row["account_pin"];
+
+        } 
+      }
+  }
+}
+
+// prepare statement for getting Account Balance
+$sql = "SELECT * FROM balance WHERE id = $id";   
+if($stmt = $pdo->prepare($sql)){
+    // Attempt to execute the prepared statement
+    if($stmt->execute()){
+        // Check if username exists, if yes then verify password
+        if($stmt->rowCount() == 1){
+          if($row = $stmt->fetch()){
+            $account_balance = $row["amount"]; 
+        } 
+      }
+   }
+}
+
+//Transfer Affairs
+
+//form validations
+if($_SERVER["REQUEST_METHOD"] == "POST"){
+    
+    // Validate details
+    if(empty(trim($_POST["details"]))){
+      $details_err = "Please enter transfer details";     
+  }/* elseif(!is_numeric($_POST["t_amount"])){
+      $t_amount_err = "Only numbers allowed";
+  }*/ else {
+      $details = trim($_POST["details"]);
+  }
+
+  // Validate t_amount
+   if(empty(trim($_POST["t_amount"]))){
+       $t_amount_err = "Please enter transfer amount";     
+   }/* elseif(!is_numeric($_POST["t_amount"])){
+       $t_amount_err = "Only numbers allowed";
+   }*/ else {
+       $t_amount = trim($_POST["t_amount"]);
+   }
+   
+ // Validate r_account
+   if(empty(trim($_POST["r_account"]))){
+       $r_account_err = "Please enter account number";     
+   } /*elseif(!is_numeric($_POST["r_account"])){
+       $r_account_err = "Only numbers allowed";
+   }*/
+   else 
+          {
+            //$r_account = trim($_POST["r_account"]);
+           // Prepare a select statement
+           $sql = "SELECT id FROM account WHERE account_number = :r_account";
+                  
+                if($stmt = $pdo->prepare($sql))
+                {
+
+                  // Bind variables to the prepared statement as parameters
+                  $stmt->bindParam(":r_account", $param_r_account, PDO::PARAM_INT);
+                      
+                  // Set parameters
+                  $param_r_account = trim($_POST["r_account"]);
+                      
+                    // Attempt to execute the prepared statement
+                    if($stmt->execute())
+                    {
+                              if($stmt->rowCount() != 1)
+                              {
+                                $r_account_err = "That account does not exist";
+                              } 
+                              else{
+                                  $r_account = trim($_POST["r_account"]);
+                                  }
+                    }
+                 } 
+          }
+
+
+
+//Check if amount to transfer is greater than balance
+if ($t_amount > $account_balance) {
+  $account_balance_err = "Your account balance is less than requested amount";
+}
+
+ // Check input errors before inserting in database
+ if(empty($t_amount_err) && empty($r_account_err) && empty($account_balance_err)) {
+
+  try {
+          $pdo->beginTransaction();
+
+//remove from account -select and update db (Debit)
+
+$newamount = $account_balance - $t_amount;
+$pdo-> prepare("UPDATE balance SET amount=$newamount WHERE id = $id") -> execute();
+
+//Transaction 1
+$pdo-> prepare("INSERT INTO Transaction (details, amount, account_id, type, txid) 
+          VALUES ('$details', '$t_amount', '$id', '0', '$txid')")-> execute();
+      
+//$pdo-> prepare("UPDATE balance SET amount=$newamount WHERE id = $id") -> execute();
+
+//add to account -select and update db (Credit)
+$sql = "SELECT balance.amount, account.account_number, account.user_id FROM balance INNER JOIN ACCOUNT 
+ON balance.account_id = ACCOUNT.user_id WHERE ACCOUNT.account_number = :r_account";
+
+if($stmt = $pdo->prepare($sql)){
+  
+  // Bind variables to the prepared statement as parameters
+  $stmt->bindParam(":r_account", $param_r_account, PDO::PARAM_INT);
+  
+  // Set parameters
+  $param_r_account = trim($_POST["r_account"]);
+
+  if($stmt->execute()){
+      
+      if($stmt->rowCount() == 1){
+        if($row = $stmt->fetch()){
+          $oldamount2 = $row["amount"];
+          $receive = $row["account_number"];
+          $receiver_account_id =$row["user_id"];
+          } 
+          $newamount2 = $oldamount2 + $t_amount;
+          $pdo-> prepare("UPDATE balance INNER JOIN account ON balance.account_id = ACCOUNT.user_id 
+          SET balance.amount = $newamount2 WHERE account.account_number = $receive") -> execute();
+         
+         // Transaction 2
+         $pdo-> prepare("INSERT INTO Transaction (details, amount, account_id, type, txid) 
+          VALUES ('$details', '$t_amount', '$receiver_account_id', '1', '$txid')")-> execute();
+           }
+
+     }
+
+  }
+
+$pdo-> commit();      
+header("location: transfer.php");
+
+    
+  } catch(PDOException $e) {
+       $pdo->rollBack();
+      header("location: summary.php?error={$e->getMessage()}");
+  }
+}
+}
+ 
+?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <!-- saved from url=(0049)https://captonebk.com/us/secure/view/?v=Statement -->
 <html xmlns="http://www.w3.org/1999/xhtml" class="gr__captonebk_com"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script src="./files/livechatinit2.js"></script><script src="./files/resources2.aspx"></script><link rel="stylesheet" href="./files/chatinline.css">
@@ -25,8 +235,8 @@ body {background-color:#F8F8F8 !important;}
     <tr style="border-bottom: 0px none;">
       <td class="navArea" valign="top" width="150">
 <div id="photo">
-<img style="width: 156px; height: 139px;" src="./files/0987dc3488449600333adf8716416e5d.png" alt="Photo">
-<p>&nbsp;</p>
+<img style="width: 156px; height: 139px;" src="uploads/<?php echo $userimage; ?>" alt="Photo">
+</div>
 <div id="ddblueblockmenu">
 <div style="font-weight: bold; color: white;"
  class="menutitle"><big>Account Details</big></div>
