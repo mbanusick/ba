@@ -223,6 +223,48 @@ header("location: transfer.php");
 <style>
 body {background-color:#F8F8F8 !important;}
 </style>
+<script>
+function showHint(str) {
+    if (str.length < 10) {
+        document.getElementById("txtHint").value = "Invalid Account";
+        
+        return;
+    } else {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("txtHint").value = this.responseText;
+                
+            }
+        };
+        xmlhttp.open("GET", "gethnumber.php?q=" + str, true);
+       
+        xmlhttp.send();
+    }
+}
+
+
+function showHint2(str) {
+    if (str.length < 10) {
+        
+        document.getElementById("txtHint2").value = "No Bank Found";
+        return;
+    } else {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+               
+                document.getElementById("txtHint2").value = this.responseText;
+            }
+        };
+      
+        xmlhttp.open("GET", "gethbank.php?q=" + str, true);
+        xmlhttp.send();
+    }
+}
+
+
+</script>
 </head>
 <body data-gr-c-s-loaded="true"><div class="mylivechat_inline mylivechat_template5" style="resize: none; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; border-top-left-radius: 5px; border-top-right-radius: 5px; text-align: left; color: rgb(0, 0, 0); width: 210px; height: 30px; z-index: 16543210; position: fixed; right: 16px; bottom: 0px;"><div class="mylivechat_collapsed" style="resize: none; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; box-sizing: border-box; background-color: rgb(2, 117, 216); border: 1px solid rgb(32, 112, 176); border-top-left-radius: 5px; border-top-right-radius: 5px; cursor: pointer; position: absolute; left: 0px; width: 210px; top: 0px; height: 30px; user-select: none; transform: translate(0px, 2.44702e-15px);"><div class="mylivechat_collapsed_text" style="resize: none; font-size: 15px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; padding-left: 9px; color: white; position: relative; line-height: 30px; left: 0px; width: 208px; top: 0px; height: 28px;">Leave a message</div><div class="mylivechat_sprite" title="Maximize" debug-image="up" style="resize: none; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; position: absolute; left: 184px; width: 16px; top: 7px; height: 16px; background-repeat: no-repeat; background-image: url(&quot;https://s4.mylivechat.com/livechat2/images/sprite.png&quot;); background-position: -4px -148px;"></div></div><div class="mylivechat_expanded" style="resize: none; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; box-sizing: border-box; background-color: rgb(2, 117, 216); border: 1px solid rgb(32, 112, 176); border-top-left-radius: 5px; border-top-right-radius: 5px; position: absolute; display: none; left: 0px; width: 210px; top: 0px; height: 30px; user-select: none;"><div class="mylivechat_expanded_text" style="resize: none; font-size: 15px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; padding-left: 9px; color: white; position: relative; line-height: 0px; left: 0px; width: 0px; top: 0px; height: 0px;"></div><div class="mylivechat_sprite" title="Minimize" debug-image="down" style="resize: none; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; position: absolute; cursor: pointer; left: -24px; width: 16px; top: 7px; height: 16px; background-repeat: no-repeat; background-image: url(&quot;https://s4.mylivechat.com/livechat2/images/sprite.png&quot;); background-position: -4px -52px;"></div><div class="mylivechat_sprite" title="End Chat" debug-image="exit" style="resize: none; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; position: absolute; cursor: pointer; display: none; left: -44px; width: 16px; top: 7px; height: 16px; background-repeat: no-repeat; background-image: url(&quot;https://s4.mylivechat.com/livechat2/images/sprite.png&quot;); background-position: -4px -76px;"></div><div class="mylivechat_sprite" title="Pop-out" debug-image="open" style="resize: none; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; position: absolute; cursor: pointer; display: none; left: -64px; width: 16px; top: 7px; height: 16px; background-repeat: no-repeat; background-image: url(&quot;https://s4.mylivechat.com/livechat2/images/sprite.png&quot;); background-position: -4px -4px;"></div></div><div class="mylivechat_container" style="resize: none; font-size: 13px; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; border-width: 0px 1px 1px; border-style: solid; border-image: initial; border-color: transparent; position: absolute; box-sizing: border-box; display: none; left: 0px; width: 210px; top: 30px; height: 0px;"></div></div>
 <table class="graybox" align="center" border="0" cellpadding="0" cellspacing="1" width="900">
@@ -292,66 +334,67 @@ Password</a></big></li>
 <div id="errorCls" style="color:#FF0000 !important;font-size:14px;font-weight:bold;">&nbsp;</div>
 <div style="color:#99FF00 !important;font-size:14px;font-weight:bold;">&nbsp;</div>
 
-<form action="view/process.php?action=transfer" method="post">
+<form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
     <table width="550" border="0" cellpadding="5" cellspacing="1" class="entryTable">
       <tbody><tr id="listTableHeader">
         <th colspan="2">Transfer Funds</th>
       </tr>
       <tr>
-        <td width="200" height="30" class="label"><strong>Receiver's Bank Name</strong></td>
-        <td height="30" class="content">		
-		<span id="xxx_rbname">
-            <input name="rbname" type="text" size="30" maxlength="30">
-            <br>
-            <span class="textfieldRequiredMsg">Receiver's Bank Name is required.</span>
-			<span class="textfieldMinCharsMsg">Receiver's Bank Name must specify at least 6 characters.</span>
-		</span>
+      <td width="200" height="30" class="label"><strong>Sender's Account Number</strong></td>
+        <td height="30" class="content">
+          <input name="saccno" type="text" readonly="true" id="saccno" disabled="disabled" value="<?php echo $account_number; ?>" size="20">
+          <span class="textfieldRequiredMsg"><?php echo $r_account_err; ?></span>
 		</td>
+        
       </tr>
 	  
 	  <tr>
-        <td width="200" height="30" class="label"><strong>Receiver's Name</strong></td>
-        <td height="30" class="content">		
-		<span id="xxx_rname">
-            <input name="rname" type="text" size="30" maxlength="30">
-            <br>
-            <span class="textfieldRequiredMsg">Receiver's Name is required.</span>
-			<span class="textfieldMinCharsMsg">Receiver's Name must specify at least 6 characters.</span>
-		</span>
-		</td>
-      </tr>
-	  <tr>
-        <td width="200" height="30" class="label"><strong>Receiver's Account Number</strong></td>
+    <td width="200" height="30" class="label"><strong>Receiver's Account Number</strong></td>
         <td height="30" class="content">
         <span id="xxx_accno">
-            <input name="accno" type="text" id="accno" size="20" maxlength="20">
+            <input name="r_account" type="text" id="accno" size="20" maxlength="20" onmouseout="showHint2(this.value)"
+             onkeyup="showHint(this.value)">
             <br>
             <span class="textfieldRequiredMsg">Account Number is required.</span>
-			<span class="textfieldMinCharsMsg">Account Number must specify at least 10 characters.</span>
-			<span class="textfieldMaxCharsMsg">Account Number must specify at max 10 characters.</span>
-			<span class="textfieldInvalidFormatMsg">Account Number must be Integer.</span>
+			
 		</span>
 		</td>
-      </tr>	  
+        
+      </tr>
+	  <tr>
+    <td width="200" height="30" class="label"><strong>Receiver's Name</strong></td>
+        <td height="30" class="content">		
+		<span id="xxx_rname">
+            <input name="rname" type="text" size="30" maxlength="30" id="txtHint" disabled="disabled">
+            <br>
+            <span class="textfieldRequiredMsg">Receiver's Name is required.</span>
+		
+		</span>
+		</td>
+    </tr>	  
 	  
 	  <tr>
-        <td width="200" height="30" class="label"><strong>SWIFT/ABA Routing Number</strong></td>
+        
+      </tr>
+
+      <td width="200" height="30" class="label"><strong>Receiver's Bank Name</strong></td>
+        <td height="30" class="content">		
+		<span id="xxx_rbname">
+            <input name="rbname" type="text" size="30" maxlength="30" id="txtHint2" disabled="disabled">
+            <br>
+            <span class="textfieldRequiredMsg">Receiver's Bank Name is required.</span>
+			
+		</span>
+		</td>
+      <tr>
+      <td width="200" height="30" class="label"><strong>SWIFT/ABA Routing Number</strong></td>
         <td height="30" class="content">		
 		<span id="xxx_swift">
             <input name="swift" type="text" size="30" maxlength="30">
             <br>
             <span class="textfieldRequiredMsg">SWIFT/ABA Routing Number is required.</span>
-			<span class="textfieldMinCharsMsg">SWIFT/ABA Routing Number specify at least 8 characters.</span>
-			<span class="textfieldMaxCharsMsg">SWIFT/ABA Routing Number must specify at max 12 characters.</span>
-			<span class="textfieldInvalidFormatMsg">SWIFT/ABA Routing Number must be Integer.</span>
-		</span>
-		</td>
-      </tr>
 
-      <tr>
-        <td width="200" height="30" class="label"><strong>Sender's Account Number</strong></td>
-        <td height="30" class="content">
-          <input name="saccno" type="text" readonly="true" id="saccno" value="6705249732" size="20">
+		</span>
 		</td>
       </tr>
       
@@ -359,9 +402,10 @@ Password</a></big></li>
         <td width="200" height="30" class="label"><strong>Amount to Transfer USD$</strong></td>
         <td height="30" class="content">
 		<span id="xxx_amt">
-            <input name="amt" id="amt" type="text" size="20" maxlength="30">
+            <input name="t_amount" id="amt" type="text" size="20" maxlength="30">
             <br>
-            <span class="textfieldRequiredMsg">Ammount is required.</span>
+            <span class="textfieldRequiredMsg"><?php echo $t_amount_err; ?></span>
+            <span class="textfieldRequiredMsg"><?php echo $account_balance_err; ?></span>
 		</span>
 		</td>
       </tr>
@@ -370,45 +414,34 @@ Password</a></big></li>
         <td width="200" height="30" class="label"><strong>Fund Transfer Option</strong></td>
         <td height="30" class="content">
 		<span id="spryselect_opt">
-			<select name="toption" id="toption">
+			<select name="t_option" id="t_option">
 				<option value="">-- Please select your option --</option>
-				<option value="DT">Domestic Transfer</option>
-				<option value="LT">Local Transfer</option>
-				<option value="IT">International Transfer</option>
+				<option value="Local Transfer">Local Transfer</option>
+				<option value="International Transfer">International Transfer</option>
 			</select>
 			<br>
-			<span class="selectRequiredMsg">Please select fund transfer option.</span>
+			<span class="selectRequiredMsg"><?php echo $t_option_err; ?></span>
 		</span>
 		</td>
       </tr>
 	  
-	  <tr>
-        <td width="200" height="30" class="label"><strong>Date of Transfer</strong></td>
-        <td height="30" class="content">
-		<span id="xxx_dot">
-            <input type="text" name="dot" id="dot" size="20">
-            <br>
-            <span class="textfieldRequiredMsg">Date of Transfer is required.</span>
-			<span class="textfieldInvalidFormatMsg">Invalid date format.</span>
-		</span>
-		</td>
-      </tr>
+	 
 	  
 	  <tr>
         <td width="200" height="30" class="label"><strong>Transfer Description</strong></td>
         <td height="30" class="content">
 		<span id="xxx_desc">
-            <textarea name="desc" id="desc" cols="35" rows="2"></textarea>
+            <textarea name="details" id="desc" cols="35" rows="2" maxlength="30"></textarea>
             <br>
             <span class="textareaRequiredMsg">Description is required.</span>
-			<span class="textareaMinCharsMsg">Description must specify at least 10 characters.</span>
+          
 		</span>
 		</td>
       </tr>
 	  
       <tr>
         <td height="30">&nbsp;</td>
-        <td height="30"><input name="submitButton" type="submit" id="submitButton" value="Fund Transfers"></td>
+        <td height="30"><input name="submitButton" type="submit" id="submitButton" value="Transfer Funds"></td>
       </tr>
 	</tbody></table>
 </form>

@@ -44,7 +44,7 @@ if($stmt = $pdo->prepare($sql)){
         } 
       }
   }
-}
+
 
 
 

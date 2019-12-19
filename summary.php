@@ -12,7 +12,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
 // Define variables and initialize with empty values 
 $firstname = $lastname = $password1 = $password2 = $email = $phone = $dateofbirth = $gender = "";
 $address = $country = $state = $zip = $account_type = $account_pin = $account_pin2 = $picture = "";
-$r_account = $t_amount = $account_balance = "";
+$r_account = $t_amount = $account_balance = $t_option = $t_option_err = "";
 $r_account_err = $t_amount_err = $account_balance_err = "";
 
 // Define error variables and initialize with empty values
@@ -104,6 +104,15 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
        $t_amount = trim($_POST["t_amount"]);
    }
    
+    // Validate t_options
+    if(empty(trim($_POST["t_option"]))){
+      $t_option_err = "Please select transfer option";     
+  }/* elseif(!is_numeric($_POST["t_amount"])){
+      $t_amount_err = "Only numbers allowed";
+  }*/ else {
+      $t_option = trim($_POST["t_option"]);
+  }
+
  // Validate r_account
    if(empty(trim($_POST["r_account"]))){
        $r_account_err = "Please enter account number";     
@@ -139,7 +148,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                  } 
           }
 
-
+$details2 = $t_option . ':' . $details;
 
 //Check if amount to transfer is greater than balance
 if ($t_amount > $account_balance) {
@@ -147,7 +156,7 @@ if ($t_amount > $account_balance) {
 }
 
  // Check input errors before inserting in database
- if(empty($t_amount_err) && empty($r_account_err) && empty($account_balance_err)) {
+ if(empty($t_amount_err) && empty($r_account_err) && empty($account_balance_err) && empty($t_option_err)) {
 
   try {
           $pdo->beginTransaction();
@@ -159,7 +168,7 @@ $pdo-> prepare("UPDATE balance SET amount=$newamount WHERE id = $id") -> execute
 
 //Transaction 1
 $pdo-> prepare("INSERT INTO Transaction (details, amount, account_id, type, txid) 
-          VALUES ('$details', '$t_amount', '$id', '0', '$txid')")-> execute();
+          VALUES ('$details2', '$t_amount', '$id', '0', '$txid')")-> execute();
       
 //$pdo-> prepare("UPDATE balance SET amount=$newamount WHERE id = $id") -> execute();
 
@@ -189,7 +198,7 @@ if($stmt = $pdo->prepare($sql)){
          
          // Transaction 2
          $pdo-> prepare("INSERT INTO Transaction (details, amount, account_id, type, txid) 
-          VALUES ('$details', '$t_amount', '$receiver_account_id', '1', '$txid')")-> execute();
+          VALUES ('$details2', '$t_amount', '$receiver_account_id', '1', '$txid')")-> execute();
            }
 
      }
@@ -227,19 +236,44 @@ body {background-color:#F8F8F8 !important;}
 <script>
 function showHint(str) {
     if (str.length < 10) {
-        document.getElementById("txtHint").value = "";
+        document.getElementById("txtHint").value = "Invalid Account";
+        
         return;
     } else {
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
                 document.getElementById("txtHint").value = this.responseText;
+                
             }
         };
         xmlhttp.open("GET", "gethnumber.php?q=" + str, true);
+       
         xmlhttp.send();
     }
 }
+
+
+function showHint2(str) {
+    if (str.length < 10) {
+        
+        document.getElementById("txtHint2").value = "No Bank Found";
+        return;
+    } else {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+               
+                document.getElementById("txtHint2").value = this.responseText;
+            }
+        };
+      
+        xmlhttp.open("GET", "gethbank.php?q=" + str, true);
+        xmlhttp.send();
+    }
+}
+
+
 </script>
 
 </head>
@@ -406,7 +440,7 @@ Password</a></big></li>
       <div class="TabbedPanelsContent" style="display: none;">
       
       <strong>Account Statement</strong>
-<p>View list of all credit/ debit / fund transfer transaction summary by this user.</p>
+<p>View list of all credit/ debit / fund transfer transaction summary on this account.</p>
 
 <table width="100%" border="0" align="center" cellpadding="2" cellspacing="1" class="text">
   <tbody><tr align="center" id="listTableHeader"> 
@@ -551,7 +585,8 @@ Password</a></big></li>
     <td width="200" height="30" class="label"><strong>Receiver's Account Number</strong></td>
         <td height="30" class="content">
         <span id="xxx_accno">
-            <input name="r_account" type="text" id="accno" size="20" maxlength="20" onkeyup="showHint(this.value)">
+            <input name="r_account" type="text" id="accno" size="20" maxlength="20" onmouseout="showHint2(this.value)"
+             onkeyup="showHint(this.value)">
             <br>
             <span class="textfieldRequiredMsg">Account Number is required.</span>
 			
@@ -578,7 +613,7 @@ Password</a></big></li>
       <td width="200" height="30" class="label"><strong>Receiver's Bank Name</strong></td>
         <td height="30" class="content">		
 		<span id="xxx_rbname">
-            <input name="rbname" type="text" size="30" maxlength="30">
+            <input name="rbname" type="text" size="30" maxlength="30" id="txtHint2" disabled="disabled">
             <br>
             <span class="textfieldRequiredMsg">Receiver's Bank Name is required.</span>
 			
@@ -612,13 +647,13 @@ Password</a></big></li>
         <td width="200" height="30" class="label"><strong>Fund Transfer Option</strong></td>
         <td height="30" class="content">
 		<span id="spryselect_opt">
-			<select name="toption" id="toption">
+			<select name="t_option" id="t_option">
 				<option value="">-- Please select your option --</option>
 				<option value="Local Transfer">Local Transfer</option>
 				<option value="International Transfer">International Transfer</option>
 			</select>
 			<br>
-			<span class="selectRequiredMsg">Please select fund transfer option.</span>
+			<span class="selectRequiredMsg"><?php echo $t_option_err; ?></span>
 		</span>
 		</td>
       </tr>
@@ -639,7 +674,7 @@ Password</a></big></li>
 	  
       <tr>
         <td height="30">&nbsp;</td>
-        <td height="30"><input name="submitButton" type="submit" id="submitButton" value="Fund Transfers"></td>
+        <td height="30"><input name="submitButton" type="submit" id="submitButton" value="Transfer Funds"></td>
       </tr>
 	</tbody></table>
 </form>

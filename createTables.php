@@ -37,6 +37,7 @@ try {
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, 
     user_id VARCHAR(30) NOT NULL,
     account_number BIGINT NOT NULL UNIQUE,
+    bank_name VARCHAR(30) NOT NULL,
     date_created DATETIME DEFAULT CURRENT_TIMESTAMP
     -- FOREIGN KEY (user_id) REFERENCES Users(id)
     )");

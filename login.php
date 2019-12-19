@@ -167,7 +167,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 		   
 		   <tr>
              <td colspan="3">
-			 If your account is not register with us, please <a href="register.php">Register it Now</a>.
+			 
 			 </td>
           </tr>
 		  
