@@ -207,6 +207,17 @@ header("location: transfer.php");
 }
 }
  
+ $getTransactions= $pdo->prepare("SELECT * FROM transaction WHERE account_id=$id ORDER BY date_updated DESC");
+
+$getTransactions->execute();
+
+$transactions = [];
+while ($row = $getTransactions->fetch(PDO::FETCH_ASSOC)) { 
+    array_push($transactions, $row); 
+}
+
+ 
+ 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <!-- saved from url=(0049)https://captonebk.com/us/secure/view/?v=Statement -->
@@ -276,110 +287,122 @@ Password</a></big></li>
             <td>
  
 <strong>Account Statement</strong>
-<p>View list of all credit/ debit / fund transfer transaction summary by this user.</p>
+<p>View list of all credit/ debit / fund transfer transaction summary on this account.</p>
 
 <table width="100%" border="0" align="center" cellpadding="2" cellspacing="1" class="text">
   <tbody><tr align="center" id="listTableHeader"> 
    <th width="80" scope="col">Transaction Date</th>
-   <th width="80">Refrence No#</th>
+   <th width="80">Reference No#</th>
    <th width="250">Description</th>
    <th width="60">Debit</th>
    <th width="60">Credit</th>
   </tr>
+  
+  <?php for($i=0; $i < count($transactions);$i++): ?>
+  <tr class="row2"> 
+   <td><?=$transactions[$i]["date_updated"]?></td>
+   <td><div align="center"><?=$transactions[$i]["txid"]?></div></td>
+   <td width="250" align="center"><?=$transactions[$i]["details"]?> of $<?= number_format($transactions[$i]["amount"], 2)?> with Reference# <?=$transactions[$i]["txid"]?></td>
+   <td width="50" align="center"><?php if ($transactions[$i]["type"] == 0) { echo '$' . number_format($transactions[$i]["amount"], 2); } else { echo " ";}?> </td>
+   <td width="50" align="center"><?php if ($transactions[$i]["type"] == 1) { echo '$'.number_format($transactions[$i]["amount"], 2);} else { echo " ";}?></td>
+  </tr>
+  <?php endfor; ?>
+  
+  
   <tr class="row2"> 
    <td>02-16-2019</td>
-   <td><div align="center">TX100000065</div></td>
-   <td width="250" align="center">Fund transfer of $50000 to Account 6705249732 Reference# TX100000065</td>
+   <td><div align="center">TRX_GHF3CVB7</div></td>
+   <td width="250" align="center">Fund transfer of $50000 with Reference# TRX_GHF3CVB7</td>
    <td width="50" align="center"></td>
-   <td width="50" align="center">$&nbsp;50,000.00</td>
+   <td width="50" align="center">$50,000.00</td>
   </tr> 
-  <tr class="row1"> 
+  <tr class="row2"> 
    <td>12-07-2018</td>
-   <td><div align="center">TX100000064</div></td>
-   <td width="250" align="center">Fund transfer of $80000 to Account 6705249732 Reference# TX100000064</td>
-   <td width="50" align="center">$&nbsp;80,000.00</td>
+   <td><div align="center">TRX_BWB562ICA</div></td>
+   <td width="250" align="center">Fund transfer of $80000 with Reference# TRX_BWB562ICA</td>
+   <td width="50" align="center">$80,000.00</td>
    <td width="50" align="center"></td>
   </tr> 
   <tr class="row2"> 
    <td>01-08-2018</td>
-   <td><div align="center">TX100000063</div></td>
-   <td width="250" align="center">Fund transfer of $200000 to Account 6705249732 Reference# TX100000063</td>
+   <td><div align="center">TRX_BWB5564DG</div></td>
+   <td width="250" align="center">Fund transfer of $200000 with Reference# TRX_BWB5564DG</td>
    <td width="50" align="center"></td>
-   <td width="50" align="center">$&nbsp;200,000.00</td>
+   <td width="50" align="center">$200,000.00</td>
   </tr> 
-  <tr class="row1"> 
+  <tr class="row2"> 
    <td>12-24-2017</td>
-   <td><div align="center">TX100000062</div></td>
-   <td width="250" align="center">Fund transfer of $167000 to Account 6705249732 Reference# TX100000062</td>
-   <td width="50" align="center">$&nbsp;167,000.00</td>
+   <td><div align="center">TRX_THB5545TJ</div></td>
+   <td width="250" align="center">Fund transfer of $167000 with Reference# TRX_THB5545TJ</td>
+   <td width="50" align="center">$167,000.00</td>
    <td width="50" align="center"></td>
   </tr> 
   <tr class="row2"> 
    <td>09-13-2016</td>
-   <td><div align="center">TX100000061</div></td>
-   <td width="250" align="center">Fund transfer of $50000 to Account 6705249732 Reference# TX100000061</td>
-   <td width="50" align="center">$&nbsp;50,000.00</td>
+   <td><div align="center">TRX_THGYU4234</div></td>
+   <td width="250" align="center">Fund transfer of $50000 with Reference# TRX_THGYU4234</td>
+   <td width="50" align="center">$50,000.00</td>
    <td width="50" align="center"></td>
   </tr> 
-  <tr class="row1"> 
+  <tr class="row2"> 
    <td>01-20-2016</td>
-   <td><div align="center">TX100000060</div></td>
-   <td width="250" align="center">Fund transfer of $580612 to Account 6705249732 Reference# TX100000060</td>
+   <td><div align="center">TRX_FHDU4TBB</div></td>
+   <td width="250" align="center">Fund transfer of $580612 with Reference# TRX_FHDU4TBB</td>
    <td width="50" align="center"></td>
-   <td width="50" align="center">$&nbsp;580,612.00</td>
+   <td width="50" align="center">$580,612.00</td>
   </tr> 
   <tr class="row2"> 
    <td>08-09-2015</td>
-   <td><div align="center">TX100000059</div></td>
-   <td width="250" align="center">Fund transfer of $350000 to Account 6705249732 Reference# TX100000059</td>
-   <td width="50" align="center">$&nbsp;350,000.00</td>
+   <td><div align="center">TRX_FHTUG654</div></td>
+   <td width="250" align="center">Fund transfer of $350000 with Reference# TRX_FHTUG654</td>
+   <td width="50" align="center">$350,000.00</td>
    <td width="50" align="center"></td>
   </tr> 
-  <tr class="row1"> 
+  <tr class="row2"> 
    <td>03-12-2015</td>
-   <td><div align="center">TX100000058</div></td>
-   <td width="250" align="center">Fund transfer of $24570 to Account 6705249732 Reference# TX100000058</td>
+   <td><div align="center">TRX_HJSUG4CS</div></td>
+   <td width="250" align="center">Fund transfer of $24570 with Reference# TRX_HJSUG4CS</td>
    <td width="50" align="center"></td>
-   <td width="50" align="center">$&nbsp;24,570.00</td>
+   <td width="50" align="center">$24,570.00</td>
   </tr> 
   <tr class="row2"> 
    <td>11-18-2014</td>
-   <td><div align="center">TX100000057</div></td>
-   <td width="250" align="center">Fund transfer of $130400 to Account 6705249732 Reference# TX100000057</td>
-   <td width="50" align="center">$&nbsp;130,400.00</td>
+   <td><div align="center">TRX_DS42GTZQ</div></td>
+   <td width="250" align="center">Fund transfer of $130400 with Reference# TRX_DS42GTZQ</td>
+   <td width="50" align="center">$130,400.00</td>
    <td width="50" align="center"></td>
   </tr> 
-  <tr class="row1"> 
+  <tr class="row2"> 
    <td>03-15-2014</td>
-   <td><div align="center">TX100000056</div></td>
-   <td width="250" align="center">Fund transfer of $69000 to Account 6705249732 Reference# TX100000056</td>
-   <td width="50" align="center">$&nbsp;69,000.00</td>
+   <td><div align="center">TRX_BV34H4JM</div></td>
+   <td width="250" align="center">Fund transfer of $69000 with Reference# TRX_BV34H4JM</td>
+   <td width="50" align="center">$69,000.00</td>
    <td width="50" align="center"></td>
   </tr> 
   <tr class="row2"> 
    <td>07-15-2013</td>
-   <td><div align="center">TX100000055</div></td>
-   <td width="250" align="center">Fund transfer of $450000 to Account 6705249732 Reference# TX100000055</td>
+   <td><div align="center">TRX_MV34H4CU</div></td>
+   <td width="250" align="center">Fund transfer of $450000 with Reference# TRX_MV34H4CU</td>
    <td width="50" align="center"></td>
-   <td width="50" align="center">$&nbsp;450,000.00</td>
+   <td width="50" align="center">$450,000.00</td>
   </tr> 
-  <tr class="row1"> 
+  <tr class="row2"> 
    <td>08-17-2012</td>
-   <td><div align="center">TX100000054</div></td>
-   <td width="250" align="center">Fund transfer of $23000 to Account 6705249732 Reference# TX100000054</td>
+   <td><div align="center">TRX_KL34H4CT</div></td>
+   <td width="250" align="center">Fund transfer of $23000 with Reference# TRX_KL34H4CT</td>
    <td width="50" align="center"></td>
-   <td width="50" align="center">$&nbsp;23,000.00</td>
+   <td width="50" align="center">$23,000.00</td>
   </tr> 
   <tr class="row2"> 
    <td>06-12-2012</td>
-   <td><div align="center">TX100000053</div></td>
-   <td width="250" align="center">Fund transfer of $100000 to Account 6705249732 Reference# TX100000053</td>
+   <td><div align="center">TRX_KFD3CT32</div></td>
+   <td width="250" align="center">Fund transfer of $100000 with Reference# TRX_KFD3CT32</td>
    <td width="50" align="center"></td>
-   <td width="50" align="center">$&nbsp;100,000.00</td>
+   <td width="50" align="center">$100,000.00</td>
   </tr> 
 </tbody></table>
 <p>&nbsp;</p>
-<strong style="font-size:15px;">Available Credit Balance: &nbsp; $ &nbsp; 581,782.00</strong></td>
+<strong style="font-size:15px;">Available Credit Balance: $ <?php $a = number_format($account_balance, 2); echo $a; ?></strong>	</td>
           </tr>
         </tbody>
       </table>

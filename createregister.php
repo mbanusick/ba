@@ -250,7 +250,7 @@ if ($uploadOk == 0) {
                     
                     $userId = $pdo-> lastInsertId();
                     $account = '3605789434';
-                    $accountNumber = $account + $userId;
+                    $accountNumber = $account + $userId + 23;
                     $pdo-> prepare ("INSERT INTO Account (user_id, account_number) VALUES ($userId, $accountNumber)") -> execute() ;
 
                     $pdo-> prepare ("INSERT INTO Balance (account_id, amount) VALUES ($userId, '0')") -> execute() ;

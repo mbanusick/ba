@@ -386,17 +386,6 @@ Password</a></big></li>
 			
 		</span>
 		</td>
-      <tr>
-      <td width="200" height="30" class="label"><strong>SWIFT/ABA Routing Number</strong></td>
-        <td height="30" class="content">		
-		<span id="xxx_swift">
-            <input name="swift" type="text" size="30" maxlength="30">
-            <br>
-            <span class="textfieldRequiredMsg">SWIFT/ABA Routing Number is required.</span>
-
-		</span>
-		</td>
-      </tr>
       
 	  <tr>
         <td width="200" height="30" class="label"><strong>Amount to Transfer USD$</strong></td>
